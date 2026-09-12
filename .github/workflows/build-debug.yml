@@ -25,6 +25,11 @@ jobs:
           flutter-version: '3.19.0'
           cache: true
 
+      - name: Create Android scaffolding
+        run: |
+          cd vyrox_app
+          flutter create . --org com.vyrox --project-name vyrox_app --platforms android
+
       - name: Install dependencies
         run: flutter pub get
         working-directory: ./vyrox_app
