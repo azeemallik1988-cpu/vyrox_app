@@ -1,0 +1,40 @@
+name: Build VYROX Debug APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: ./vyrox_app
+
+      - name: Build Debug APK
+        run: flutter build apk --debug
+        working-directory: ./vyrox_app
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vyrox-ai-debug-apk
+          path: vyrox_app/build/app/outputs/flutter-apk/app-debug.apk
