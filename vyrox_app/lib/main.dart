@@ -20,7 +20,6 @@ class VyroxApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
         scaffoldBackgroundColor: const Color(0xFF090A0F),
-        useMaterial3: true,
       ),
       home: const VyroxHomeScreen(),
     );
@@ -55,7 +54,7 @@ class _VyroxHomeScreenState extends State<VyroxHomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         backgroundColor: const Color(0xFF11131A),
-        indicatorColor: const Color(0xFF9B6CFF).withOpacity(0.25),
+        indicatorColor: const Color(0x409B6CFF),
         onDestinationSelected: (index) {
           setState(() {
             selectedIndex = index;
@@ -98,252 +97,151 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-        children: [
-          const Row(
-            children: [
-              _LogoMark(),
-              SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return const SafeArea(
+      child: Padding(
+        padding: EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'VYROX AI STUDIO',
+              style: TextStyle(
+                fontSize: 13,
+                letterSpacing: 1.6,
+                color: Color(0xFF9B6CFF),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Create with AI',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Generate video, images, and assets from one studio.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Color(0xA6FFFFFF),
+              ),
+            ),
+            SizedBox(height: 28),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
                 children: [
-                  Text(
-                    'VYROX AI',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
-                    ),
+                  _FeatureCard(
+                    icon: Icons.auto_awesome,
+                    title: 'Generate',
+                    subtitle: 'Text to video',
                   ),
-                  Text(
-                    'One Idea. Every Creation.',
-                    style: TextStyle(
-                      color: Color(0xFFAAAFC0),
-                      fontSize: 12,
-                    ),
+                  _FeatureCard(
+                    icon: Icons.image_outlined,
+                    title: 'Images',
+                    subtitle: 'AI stills',
+                  ),
+                  _FeatureCard(
+                    icon: Icons.movie_outlined,
+                    title: 'Projects',
+                    subtitle: 'Your timeline',
+                  ),
+                  _FeatureCard(
+                    icon: Icons.folder_outlined,
+                    title: 'Assets',
+                    subtitle: 'Library',
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 38),
-          const Text(
-            'WHAT DO YOU WANT\nTO CREATE?',
-            style: TextStyle(
-              fontSize: 31,
-              height: 1.08,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.8,
             ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Turn your idea into images, video, music, voice and complete creative projects.',
-            style: TextStyle(
-              color: Color(0xFFAAAFC0),
-              fontSize: 15,
-              height: 1.45,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF151821),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF292D3A)),
-            ),
-            child: TextField(
-              minLines: 3,
-              maxLines: 5,
-              decoration: InputDecoration(
-                hintText: 'Describe anything...',
-                hintStyle: const TextStyle(color: Color(0xFF777D90)),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(16),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: IconButton.filled(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'UI test successful. Backend connection comes next.',
-                          ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.arrow_upward),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          const Text(
-            'CREATE',
-            style: TextStyle(
-              color: Color(0xFFAAAFC0),
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.4,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const GridViewCards(),
-        ],
+          ],
+        ),
       ),
     );
   }
-}
-
-class GridViewCards extends StatelessWidget {
-  const GridViewCards({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    const items = [
-      CreationItem('VIDEO', Icons.movie_creation_outlined),
-      CreationItem('IMAGE', Icons.image_outlined),
-      CreationItem('MUSIC', Icons.music_note_outlined),
-      CreationItem('VOICE', Icons.mic_none),
-      CreationItem('SOUND FX', Icons.graphic_eq),
-      CreationItem('AUTO CREATE', Icons.auto_awesome),
-    ];
-
-    return GridView.builder(
-      itemCount: items.length,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.35,
-      ),
-      itemBuilder: (context, index) {
-        final item = items[index];
-
-        return InkWell(
-          borderRadius: BorderRadius.circular(18),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${item.label} selected')),
-            );
-          },
-          child: Ink(
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF191C27),
-                  Color(0xFF12141C),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFF292D3A)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    item.icon,
-                    color: const Color(0xFFB99AFF),
-                    size: 29,
-                  ),
-                  const Spacer(),
-                  Text(
-                    item.label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class CreationItem {
-  final String label;
-  final IconData icon;
-
-  const CreationItem(this.label, this.icon);
 }
 
 class SimplePage extends StatelessWidget {
-  final String title;
-  final IconData icon;
-
   const SimplePage({
     super.key,
     required this.title,
     required this.icon,
   });
 
+  final String title;
+  final IconData icon;
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 58,
-              color: const Color(0xFFB99AFF),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 56, color: const Color(0xFF9B6CFF)),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              color: Colors.white,
             ),
-            const SizedBox(height: 18),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Feature development in progress',
-              style: TextStyle(color: Color(0xFFAAAFC0)),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _LogoMark extends StatelessWidget {
-  const _LogoMark();
+class _FeatureCard extends StatelessWidget {
+  const _FeatureCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 48,
-      height: 48,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF9B6CFF),
-            Color(0xFF4DC6FF),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(15),
+        color: const Color(0xFF11131A),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFF2A2D3A)),
       ),
-      child: const Icon(
-        Icons.auto_awesome,
-        color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: const Color(0xFF9B6CFF), size: 28),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0x8CFFFFFF),
+            ),
+          ),
+        ],
       ),
     );
   }
