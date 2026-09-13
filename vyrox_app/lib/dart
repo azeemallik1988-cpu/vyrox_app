@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
-import 'core/theme/vyrox_theme.dart';
-import 'features/shell/app_shell.dart';
+import 'core/store.dart';
+import 'core/theme.dart';
+import 'shell.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const VyroxApp());
+  final CreationsStore store = CreationsStore();
+  await store.load();
+  runApp(VyroxScope(store: store, child: const VyroxApp()));
 }
 
 class VyroxApp extends StatelessWidget {
@@ -14,10 +17,10 @@ class VyroxApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'VYROX AI',
+      title: 'VYROX AI Studio',
       debugShowCheckedModeBanner: false,
       theme: VyroxTheme.dark(),
-      home: const AppShell(),
+      home: const VyroxShell(),
     );
   }
 }
