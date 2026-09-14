@@ -1,4 +1,4 @@
-// ignore_for_file: prefer_const_constructors, unused_element
+// ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
 
@@ -15,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Glass profile card
+              // Glass profile card — fixed with Expanded
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
@@ -26,12 +26,13 @@ class ProfileScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF2D1B4E).withOpacity(0.5),
-                      const Color(0xFF0D0A14).withOpacity(0.95),
+                      Color(0xFF2D1B4E).withOpacity(0.5),
+                      Color(0xFF0D0A14).withOpacity(0.95),
                     ],
                   ),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const CircleAvatar(
                       radius: 36,
@@ -42,11 +43,12 @@ class ProfileScreen extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           const Text(
                             'lik1988',
                             style: TextStyle(
-                              fontSize: 30,
+                              fontSize: 28,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               letterSpacing: -2,
@@ -56,7 +58,7 @@ class ProfileScreen extends StatelessWidget {
                           const Text(
                             '@gmail.com',
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white70,
                               letterSpacing: -1,
@@ -94,7 +96,7 @@ class ProfileScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Plan / Free card
+              // Plan card — purple to lime
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
