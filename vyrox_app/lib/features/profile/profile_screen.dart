@@ -1,203 +1,250 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../core/auth/auth_controller.dart';
-import '../../core/theme/vyrox_theme.dart';
-
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  int credits = 120;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCredits();
-  }
-
-  Future<void> _loadCredits() async {
-    if (!AuthController.enabled) return;
-    try {
-      final value = await AuthController.credits();
-      if (mounted) setState(() => credits = value);
-    } catch (_) {}
-  }
-
-  Future<void> _openLogin() async {
-    final ok = await context.push<bool>('/login');
-    if (ok == true && mounted) {
-      setState(() {});
-      await _loadCredits();
-    }
-  }
-
-  void _snack(String text) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final user = AuthController.user;
-    final signedIn = user != null;
-
-    return ColoredBox(
-      color: VyroxColors.bg,
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-          children: [
-            const Text(
-              'Profile',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 18),
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: VyroxColors.card,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: VyroxColors.line),
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Color(0xFF2A1850),
-                    child: Icon(Icons.person, color: Colors.white, size: 28),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0C17),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Glass card — your top image
+              Container(
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF2D1B4E).withOpacity(0.5),
+                      Color(0xFF0D0A14).withOpacity(0.95),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          signedIn ? (user.email ?? 'Creator') : 'Creator',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        Text(
-                          signedIn ? 'Signed in' : 'Guest · sign in to save',
-                          style: const TextStyle(color: Color(0xFFB9B9C6)),
-                        ),
-                      ],
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 36,
+                      backgroundColor: Color(0xFF4A2A7A),
+                      child: Icon(Icons.person, size: 36, color: Colors.white),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: signedIn
-                        ? () async {
-                            await AuthController.signOut();
-                            if (mounted) {
-                              setState(() => credits = 120);
-                            }
-                          }
-                        : _openLogin,
-                    child: Text(signedIn ? 'Sign out' : 'Sign in'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(22),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7C5CFF), Color(0xFFD6FF4A)],
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'lik1988',
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: -2,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            '@gmail.com',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white70,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Text(
+                                'Signed in',
+                                style: TextStyle(
+                                  color: Colors.white60,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Spacer(),
+                              TextButton(
+                                onPressed: () {},
+                                child: Text(
+                                  'Sign out',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Plan · Free',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
+
+              SizedBox(height: 16),
+
+              // Plan / Free card — purple to lime
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(28),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF7B4FCE),
+                      Color(0xFFC8F560),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Plan · Free',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Unlock Turbo and Avatar priority',
-                          style: TextStyle(color: Colors.black87),
-                        ),
-                      ],
+                          SizedBox(height: 4),
+                          Text(
+                            'Unlock Turbo and Avatar priority',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  FilledButton(
-                    style: FilledButton.styleFrom(backgroundColor: Colors.black),
-                    onPressed: () => context.push('/vip'),
-                    child: const Text('Upgrade'),
-                  ),
-                ],
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        shape: StadiumBorder(),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Upgrade',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: Color(0xFF181228),   // or similar dark grey
-                borderRadius: BorderRadius.circular(28)
-                border: Border.all(color: VyroxColors.line),
-                ,
-                child: ...
-               ),
+
+              SizedBox(height: 16),
+
+              // Credits
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+                decoration: BoxDecoration(
+                  color: Color(0xFF181228),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.bolt, color: Color(0xFFC8F560), size: 28),
+                    SizedBox(width: 12),
+                    Text(
+                      'Credits',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Spacer(),
+                    Text(
+                      '120',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: Row(
-                children: [
-                  const Icon(Icons.bolt, color: Color(0xFFB8FF4A)),
-                  const SizedBox(width: 10),
-                  const Expanded(
-                    child: Text('Credits', style: TextStyle(fontWeight: FontWeight.w700)),
-                  ),
-                  Text(
-                    '$credits',
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 18),
-            _Tile(label: 'Appearance', onTap: () => _snack('Appearance')),
-            _Tile(label: 'Notifications', onTap: () => _snack('Notifications')),
-            _Tile(label: 'Help', onTap: () => _snack('Help')),
-            _Tile(label: 'Privacy Policy', onTap: () => _snack('Privacy Policy')),
-            _Tile(label: 'Terms', onTap: () => _snack('Terms')),
-            _Tile(label: 'About', onTap: () => _snack('About VYROX AI Studio')),
-          ],
+
+              SizedBox(height: 12),
+
+              // Menu rows
+              _MenuRow(title: 'Appearance', onTap: () {}),
+              SizedBox(height: 10),
+              _MenuRow(title: 'Notifications', onTap: () {}),
+              SizedBox(height: 10),
+              _MenuRow(title: 'Help', onTap: () {}),
+              SizedBox(height: 10),
+              _MenuRow(title: 'Privacy Policy', onTap: () {}),
+              SizedBox(height: 30),
+            ],
+          ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFF0F0C17),
+        selectedItemColor: Color(0xFF7B4FCE),
+        unselectedItemColor: Colors.white54,
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 4,
+        onTap: (index) {},
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: 'Create'),
+          BottomNavigationBarItem(icon: Icon(Icons.explore), label: 'Explore'),
+          BottomNavigationBarItem(icon: Icon(Icons.grid_view), label: 'Creations'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
     );
   }
 }
 
-class _Tile extends StatelessWidget {
-  const _Tile({required this.label, required this.onTap});
-
-  final String label;
+class _MenuRow extends StatelessWidget {
+  final String title;
   final VoidCallback onTap;
+  const _MenuRow({required this.title, required this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: VyroxColors.card,
-        borderRadius: BorderRadius.circular(16),
-        child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: onTap,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: Color(0xFF181228),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.white70),
+          ],
         ),
       ),
     );
