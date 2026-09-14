@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 
 import '../core/models/creation.dart';
+import '../features/auth/login_screen.dart';
 import '../features/create/create_screen.dart';
 import '../features/create/create_tool_screen.dart';
 import '../features/creations/creation_detail_screen.dart';
@@ -62,6 +63,10 @@ GoRouter buildRouter() {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/vip',
