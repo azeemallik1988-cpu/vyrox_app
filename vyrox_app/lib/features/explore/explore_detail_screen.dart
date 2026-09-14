@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/models/creation.dart';
 import '../../core/theme/vyrox_theme.dart';
 import '../../core/widgets/gradient_placeholder.dart';
 import 'explore_data.dart';
