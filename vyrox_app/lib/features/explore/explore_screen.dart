@@ -1,117 +1,119 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../core/models/creation.dart';
-import '../../core/theme/vyrox_theme.dart';
-import '../../core/widgets/gradient_placeholder.dart';
-import 'explore_data.dart';
-
-class ExploreScreen extends StatefulWidget {
+class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
 
   @override
-  State<ExploreScreen> createState() => _ExploreScreenState();
-}
-
-class _ExploreScreenState extends State<ExploreScreen> {
-  String filter = 'All';
-  static const filters = ['All', 'Image', 'Video', 'Sound', 'Text', 'Avatar', 'Music'];
-
-  @override
   Widget build(BuildContext context) {
-    final items = exploreItems
-        .where((e) => filter == 'All' || e.category == filter)
-        .toList();
+    final filters = ['All', 'Image', 'Video', 'Sound'];
+    final items = [
+      {'title': 'Neon alley', 'sub': 'Rainy neon alley, cinematic', 'tag': 'Image'},
+      {'title': 'Trailer cut', 'sub': 'Epic trailer camera push-in', 'tag': 'Video'},
+      {'title': 'Low drone', 'sub': 'Dark ambient drone in D minor', 'tag': 'Sound'},
+      {'title': 'Hook copy', 'sub': 'Catchy hook for intro', 'tag': 'Text'},
+    ];
 
-    return ColoredBox(
-      color: VyroxColors.bg,
-      child: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
-          children: [
-            const Text(
-              'Explore',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              'Community mock feed. Use any prompt in Create.',
-              style: TextStyle(color: Color(0xFFB9B9C6)),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: filters.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final item = filters[index];
-                  final selected = filter == item;
-                  return ChoiceChip(
-                    label: Text(item),
-                    selected: selected,
-                    onSelected: (_) => setState(() => filter = item),
-                  );
-                },
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0C17),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Explore',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -3,
+                  height: 1.1,
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            for (final item in items)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: InkWell(
-                  onTap: () => context.push('/explore/detail/${item.id}'),
-                  borderRadius: BorderRadius.circular(22),
-                  child: Ink(
-                    height: 118,
+              const SizedBox(height: 8),
+              const Text(
+                'Community mock feed. Use any prompt in Create.',
+                style: TextStyle(fontSize: 16, color: Colors.white70),
+              ),
+              const SizedBox(height: 20),
+
+              // Filter chips
+              Wrap(
+                spacing: 10,
+                children: filters.map((f) {
+                  final active = f == 'All';
+                  return Chip(
+                    label: Text(f),
+                    backgroundColor: active ? const Color(0xFF7B4FCE) : const Color(0xFF211C2D),
+                    labelStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 28),
+
+              // Mock feed items
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final it = items[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: VyroxColors.card,
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(color: VyroxColors.line),
+                      color: const Color(0xFF181228),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.white.withOpacity(0.08)),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          width: 118,
-                          child: GradientPlaceholder(seed: item.seed, borderRadius: 22),
+                        Text(
+                          it['title']!,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: -1,
+                          ),
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.title,
-                                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  item.prompt,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(color: Color(0xFFB9B9C6), height: 1.25),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  item.type.label,
-                                  style: const TextStyle(
-                                    color: VyroxColors.accent,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
+                        const SizedBox(height: 4),
+                        Text(
+                          it['sub']!,
+                          style: const TextStyle(fontSize: 14, color: Colors.white60),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: it['tag'] == 'Image'
+                                ? const Color(0xFF7B4FCE).withOpacity(0.25)
+                                : Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            it['tag']!,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white70,
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
-          ],
+
+              // This extra space kills the overflow
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
