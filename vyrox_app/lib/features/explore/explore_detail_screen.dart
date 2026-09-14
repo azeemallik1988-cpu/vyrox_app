@@ -59,9 +59,8 @@ class ExploreDetailScreen extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
                         body: SingleChildScrollView(
-                          child: Column( // ...
-                          keep everything that is already there    
-                      ),
+                          child: Column( // ...    
+                      ),... keep everything that is already there ...
                     ),
                   ),
                 ),
