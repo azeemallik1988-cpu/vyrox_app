@@ -37,37 +37,48 @@ class HomeScreen extends StatelessWidget {
                 itemCount: tools.length,
                 itemBuilder: (_, i) {
                   final t = tools[i];
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF181228),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.08)),
-                    ),
-                    child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Stack(alignment: Alignment.topRight, children: [
-                        Icon(t['icon'], size: 30, color: Colors.white),
-                        Positioned(top: 0, right: 0, child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: t['c'], borderRadius: BorderRadius.circular(10)), child: Text(t['badge'], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)))),
+                  return GestureDetector(
+                    onTap: () {
+                      // Open Create screen later; for now just feedback
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('${t['label']} tapped'), duration: Duration(seconds: 1)),
+                      );
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF181228),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white.withOpacity(0.08)),
+                      ),
+                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Stack(alignment: Alignment.topRight, children: [
+                          Icon(t['icon'], size: 30, color: Colors.white),
+                          Positioned(top: 0, right: 0, child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: t['c'], borderRadius: BorderRadius.circular(10)), child: Text(t['badge'], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)))),
+                        ]),
+                        const SizedBox(height: 8),
+                        Text(t['label'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
                       ]),
-                      const SizedBox(height: 8),
-                      Text(t['label'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-                    ]),
+                    ),
                   );
                 },
               ),
               const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]), border: Border.all(color: Colors.white.withOpacity(0.12))),
-                child: Row(children: [
-                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                    const SizedBox(height: 4),
-                    const Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70)),
-                  ])),
-                  IconButton(icon: const Icon(Icons.arrow_forward, color: Color(0xFFC8F560)), onPressed: () {}),
-                ]),
+              GestureDetector(
+                onTap: () => Navigator.pushNamed(context, '/explore'),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]), border: Border.all(color: Colors.white.withOpacity(0.12))),
+                  child: Row(children: [
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                      const SizedBox(height: 4),
+                      const Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70)),
+                    ])),
+                    const Icon(Icons.arrow_forward, color: Color(0xFFC8F560)),
+                  ]),
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30), // kills overflow
             ],
           ),
         ),
@@ -78,7 +89,10 @@ class HomeScreen extends StatelessWidget {
         unselectedItemColor: Colors.white54,
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
-        onTap: (i) {},
+        onTap: (i) {
+          if (i == 2) Navigator.pushNamed(context, '/explore');
+          if (i == 4) Navigator.pushNamed(context, '/profile');
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: 'Create'),
