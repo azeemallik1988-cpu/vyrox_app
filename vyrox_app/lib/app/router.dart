@@ -26,7 +26,7 @@ GoRouter buildRouter() {
             routes: [
               GoRoute(
                 path: '/home',
-                builder: (context, state) => const HomeScreen(),
+                builder: (context, state) => const Placeholder(),
               ),
             ],
           ),
@@ -83,7 +83,7 @@ GoRouter buildRouter() {
       GoRoute(
         path: '/explore/detail/:id',
         builder: (context, state) {
-          return ExploreDetailScreen(id: state.pathParameters['id']!);
+          return ExploreDetailScreen
         },
       ),
       GoRoute(
