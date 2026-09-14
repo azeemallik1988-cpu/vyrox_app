@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors, unused_element
+
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -13,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Glass card — your top image
+              // Glass profile card
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
@@ -24,24 +26,24 @@ class ProfileScreen extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF2D1B4E).withOpacity(0.5),
-                      Color(0xFF0D0A14).withOpacity(0.95),
+                      const Color(0xFF2D1B4E).withOpacity(0.5),
+                      const Color(0xFF0D0A14).withOpacity(0.95),
                     ],
                   ),
                 ),
                 child: Row(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 36,
                       backgroundColor: Color(0xFF4A2A7A),
                       child: Icon(Icons.person, size: 36, color: Colors.white),
                     ),
-                    SizedBox(width: 16),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'lik1988',
                             style: TextStyle(
                               fontSize: 30,
@@ -50,8 +52,8 @@ class ProfileScreen extends StatelessWidget {
                               letterSpacing: -2,
                             ),
                           ),
-                          SizedBox(height: 2),
-                          Text(
+                          const SizedBox(height: 2),
+                          const Text(
                             '@gmail.com',
                             style: TextStyle(
                               fontSize: 20,
@@ -60,20 +62,20 @@ class ProfileScreen extends StatelessWidget {
                               letterSpacing: -1,
                             ),
                           ),
-                          SizedBox(height: 8),
+                          const SizedBox(height: 8),
                           Row(
                             children: [
-                              Text(
+                              const Text(
                                 'Signed in',
                                 style: TextStyle(
                                   color: Colors.white60,
                                   fontSize: 14,
                                 ),
                               ),
-                              Spacer(),
+                              const Spacer(),
                               TextButton(
                                 onPressed: () {},
-                                child: Text(
+                                child: const Text(
                                   'Sign out',
                                   style: TextStyle(
                                     color: Colors.white,
@@ -90,14 +92,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-              // Plan / Free card — purple to lime
+              // Plan / Free card
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(28),
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
@@ -111,7 +113,7 @@ class ProfileScreen extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                        children: const [
                           Text(
                             'Plan · Free',
                             style: TextStyle(
@@ -136,11 +138,14 @@ class ProfileScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
-                        shape: StadiumBorder(),
-                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 14,
+                        ),
                         elevation: 0,
                       ),
-                      child: Text(
+                      child: const Text(
                         'Upgrade',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -149,20 +154,24 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
 
               // Credits
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 22, vertical: 18),
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
                 decoration: BoxDecoration(
-                  color: Color(0xFF181228),
+                  color: const Color(0xFF181228),
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.bolt, color: Color(0xFFC8F560), size: 28),
-                    SizedBox(width: 12),
-                    Text(
+                    const Icon(
+                      Icons.bolt,
+                      color: Color(0xFFC8F560),
+                      size: 28,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
                       'Credits',
                       style: TextStyle(
                         fontSize: 22,
@@ -170,8 +179,8 @@ class ProfileScreen extends StatelessWidget {
                         color: Colors.white,
                       ),
                     ),
-                    Spacer(),
-                    Text(
+                    const Spacer(),
+                    const Text(
                       '120',
                       style: TextStyle(
                         fontSize: 26,
@@ -183,24 +192,23 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-              // Menu rows
-              _MenuRow(title: 'Appearance', onTap: () {}),
-              SizedBox(height: 10),
-              _MenuRow(title: 'Notifications', onTap: () {}),
-              SizedBox(height: 10),
-              _MenuRow(title: 'Help', onTap: () {}),
-              SizedBox(height: 10),
-              _MenuRow(title: 'Privacy Policy', onTap: () {}),
-              SizedBox(height: 30),
+              const _MenuRow(title: 'Appearance', onTap: null),
+              const SizedBox(height: 10),
+              const _MenuRow(title: 'Notifications', onTap: null),
+              const SizedBox(height: 10),
+              const _MenuRow(title: 'Help', onTap: null),
+              const SizedBox(height: 10),
+              const _MenuRow(title: 'Privacy Policy', onTap: null),
+              const SizedBox(height: 30),
             ],
           ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: const Color(0xFF0F0C17),
-        selectedItemColor: Color(0xFF7B4FCE),
+        selectedItemColor: const Color(0xFF7B4FCE),
         unselectedItemColor: Colors.white54,
         type: BottomNavigationBarType.fixed,
         currentIndex: 4,
@@ -219,17 +227,17 @@ class ProfileScreen extends StatelessWidget {
 
 class _MenuRow extends StatelessWidget {
   final String title;
-  final VoidCallback onTap;
-  const _MenuRow({required this.title, required this.onTap, super.key});
+  final VoidCallback? onTap;
+  const _MenuRow({required this.title, this.onTap, super.key});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
-          color: Color(0xFF181228),
+          color: const Color(0xFF181228),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -237,13 +245,13 @@ class _MenuRow extends StatelessWidget {
           children: [
             Text(
               title,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.white70),
+            const Icon(Icons.chevron_right, color: Colors.white70),
           ],
         ),
       ),
