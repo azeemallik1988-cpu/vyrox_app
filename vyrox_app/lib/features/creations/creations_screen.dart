@@ -39,68 +39,106 @@ class _CreationsScreenState extends ConsumerState<CreationsScreen> {
   Widget build(BuildContext context) {
     final items = ref.watch(creationsProvider).where(_match).toList();
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Creations', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              children: [
-                for (final item in const ['All', 'Images', 'Videos', 'Sounds', 'Text'])
-                  ChoiceChip(
-                    label: Text(item),
-                    selected: filter == item,
-                    onSelected: (_) => setState(() => filter = item),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: items.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No creations yet.\nOpen Create and generate one.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: VyroxColors.muted),
+    return ColoredBox(
+      color: VyroxColors.bg,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Creations',
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 40,
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  children: [
+                    for (final item in const ['All', 'Images', 'Videos', 'Sounds', 'Text'])
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          label: Text(item),
+                          selected: filter == item,
+                          onSelected: (_) => setState(() => filter = item),
+                        ),
                       ),
-                    )
-                  : GridView.builder(
-                      itemCount: items.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: items.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.auto_awesome, color: VyroxColors.accent, size: 40),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'No creations yet',
+                              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Open Create and generate one.',
+                              style: TextStyle(color: Color(0xFFB9B9C6)),
+                            ),
+                            const SizedBox(height: 16),
+                            FilledButton(
+                              onPressed: () => context.go('/create'),
+                              child: const Text('Create'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : GridView.builder(
+                        itemCount: items.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 12,
+                          childAspectRatio: 0.78,
+                        ),
+                        itemBuilder: (context, index) {
+                          final item = items[index];
+                          return InkWell(
+                            onTap: () => context.push('/creations/detail/${item.id}'),
+                            borderRadius: BorderRadius.circular(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: GradientPlaceholder(
+                                    seed: item.thumbnailSeed,
+                                    borderRadius: 20,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  item.prompt,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontWeight: FontWeight.w700),
+                                ),
+                                Text(
+                                  '${item.type.label} · ${item.status.name}',
+                                  style: const TextStyle(
+                                    color: Color(0xFFB9B9C6),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
-                      itemBuilder: (context, index) {
-                        final item = items[index];
-                        return InkWell(
-                          onTap: () => context.push('/creations/detail/${item.id}'),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(child: GradientPlaceholder(seed: item.thumbnailSeed)),
-                              const SizedBox(height: 6),
-                              Text(
-                                item.prompt,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                              ),
-                              Text(
-                                '${item.type.label} · ${item.status.name}',
-                                style: const TextStyle(color: VyroxColors.muted, fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
