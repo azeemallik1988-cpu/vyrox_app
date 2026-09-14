@@ -8,9 +8,7 @@ environment:
 
 dependencies:
   flutter:
-    sdk: flutter
-  flutter_riverpod: 2.5.1
-  go_router: 13.2.4
+    sdk: flutter   
   shared_preferences: 2.2.3
   shared_preferences_android: 2.2.1
 
