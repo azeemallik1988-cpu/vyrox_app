@@ -145,9 +145,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: VyroxColors.card,
-                borderRadius: BorderRadius.circular(18),
+                color: Color(0xFF181228),   // or similar dark grey
+                borderRadius: BorderRadius.circular(28)
                 border: Border.all(color: VyroxColors.line),
+                ,
+                child: ...
+               ),
               ),
               child: Row(
                 children: [
