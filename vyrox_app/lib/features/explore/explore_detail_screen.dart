@@ -58,6 +58,9 @@ class ExploreDetailScreen extends StatelessWidget {
                         color: Colors.black,
                         fontWeight: FontWeight.w800,
                         fontSize: 16,
+                        body: SingleChildScrollView(
+                          child: Column( // ...
+                          keep everything that is already there    
                       ),
                     ),
                   ),
