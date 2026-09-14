@@ -25,16 +25,52 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  String _clean(Object e) {
+    final raw = e.toString();
+    if (raw.contains('anonymous') || raw.contains('Anonymous')) {
+      return 'Type your email and password first, then tap Create free account.';
+    }
+    if (raw.contains('Invalid login credentials')) {
+      return 'Wrong email/password, or no account yet. Use Create free account.';
+    }
+    if (raw.contains('already registered') || raw.contains('User already')) {
+      return 'This email already exists. Use Sign in.';
+    }
+    if (raw.toLowerCase().contains('password')) {
+      return 'Password must be at least 6 characters.';
+    }
+    return raw;
+  }
+
   Future<void> _run(Future<void> Function() action) async {
+    final mail = email.text.trim();
+    final pass = password.text;
+
+    if (mail.isEmpty || !mail.contains('@')) {
+      setState(() => error = 'Type a real email address.');
+      return;
+    }
+    if (pass.length < 6) {
+      setState(() => error = 'Password must be at least 6 characters.');
+      return;
+    }
+
     setState(() {
       busy = true;
       error = null;
     });
     try {
       await action();
-      if (mounted) context.pop(true);
+      if (AuthController.signedIn) {
+        if (mounted) context.pop(true);
+      } else {
+        setState(() {
+          error =
+              'Account created, but Confirm email is still ON in Supabase. Turn it OFF, then Sign in.';
+        });
+      }
     } catch (e) {
-      setState(() => error = e.toString());
+      setState(() => error = _clean(e));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -54,13 +90,13 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Free email login. No paid API keys.',
+            'Type email + password, then Create free account.',
             style: TextStyle(color: Color(0xFFB9B9C6)),
           ),
           if (!VyroxConfig.isConfigured) ...[
             const SizedBox(height: 16),
             const Text(
-              'Add your Project URL and anon key in vyrox_config.dart first.',
+              'Add Project URL and anon key in vyrox_config.dart first.',
               style: TextStyle(color: Colors.orangeAccent),
             ),
           ],
@@ -68,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
           TextField(
             controller: email,
             keyboardType: TextInputType.emailAddress,
+            autofillHints: const [AutofillHints.email],
             decoration: InputDecoration(
               labelText: 'Email',
               filled: true,
@@ -82,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
           TextField(
             controller: password,
             obscureText: true,
+            autofillHints: const [AutofillHints.newPassword],
             decoration: InputDecoration(
               labelText: 'Password (6+ characters)',
               filled: true,
@@ -97,6 +135,24 @@ class _LoginScreenState extends State<LoginScreen> {
             Text(error!, style: const TextStyle(color: Colors.redAccent)),
           ],
           const SizedBox(height: 24),
+          OutlinedButton(
+            onPressed: busy || !VyroxConfig.isConfigured
+                ? null
+                : () => _run(() async {
+                      await AuthController.signUp(
+                        email.text.trim(),
+                        password.text,
+                      );
+                      if (!AuthController.signedIn) {
+                        await AuthController.signIn(
+                          email.text.trim(),
+                          password.text,
+                        );
+                      }
+                    }),
+            child: const Text('Create free account'),
+          ),
+          const SizedBox(height: 10),
           SizedBox(
             height: 56,
             child: DecoratedBox(
@@ -131,18 +187,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          OutlinedButton(
-            onPressed: busy || !VyroxConfig.isConfigured
-                ? null
-                : () => _run(() async {
-                      await AuthController.signUp(
-                        email.text.trim(),
-                        password.text,
-                      );
-                    }),
-            child: const Text('Create free account'),
           ),
         ],
       ),
