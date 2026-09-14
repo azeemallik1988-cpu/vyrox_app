@@ -26,38 +26,30 @@ class HomeScreen extends ConsumerWidget {
     final recent = ref.watch(creationsProvider).take(8).toList();
 
     return ColoredBox(
-      color: VyroxColors.bg,
+      color: const Color(0xFF07080C),
       child: SafeArea(
         bottom: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 120),
           children: [
             _Hero(onVip: () => context.push('/vip')),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             _ToolBoard(
               tools: _tools,
               onTool: (type) => context.push('/tool/${type.param}'),
               onMore: () => context.go('/create'),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
                   flex: 3,
-                  child: _GradientAction(
-                    label: 'New Project',
-                    icon: Icons.add,
-                    onTap: () => context.go('/create'),
-                  ),
+                  child: _NewProject(onTap: () => context.go('/create')),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   flex: 2,
-                  child: _DarkAction(
-                    label: 'Resources',
-                    icon: Icons.auto_awesome,
-                    onTap: () => context.go('/explore'),
-                  ),
+                  child: _Resources(onTap: () => context.go('/explore')),
                 ),
               ],
             ),
@@ -68,38 +60,29 @@ class HomeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 92,
-              child: recent.isEmpty
-                  ? ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 4,
-                      separatorBuilder: (_, __) => const SizedBox(width: 10),
-                      itemBuilder: (context, index) {
-                        return SizedBox(
-                          width: 92,
-                          child: GradientPlaceholder(seed: 40 + index * 37),
-                        );
-                      },
-                    )
-                  : ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: recent.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 10),
-                      itemBuilder: (context, index) {
-                        final item = recent[index];
-                        return SizedBox(
-                          width: 92,
-                          child: InkWell(
-                            onTap: () =>
-                                context.push('/creations/detail/${item.id}'),
-                            borderRadius: BorderRadius.circular(16),
-                            child: GradientPlaceholder(
-                              seed: item.thumbnailSeed,
-                            ),
-                          ),
-                        );
-                      },
+              height: 96,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: recent.isEmpty ? 4 : recent.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  if (recent.isEmpty) {
+                    return SizedBox(
+                      width: 96,
+                      child: GradientPlaceholder(seed: 40 + index * 37),
+                    );
+                  }
+                  final item = recent[index];
+                  return SizedBox(
+                    width: 96,
+                    child: InkWell(
+                      onTap: () => context.push('/creations/detail/${item.id}'),
+                      borderRadius: BorderRadius.circular(18),
+                      child: GradientPlaceholder(seed: item.thumbnailSeed),
                     ),
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -116,9 +99,9 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(26),
       child: SizedBox(
-        height: 210,
+        height: 188,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -128,10 +111,34 @@ class _Hero extends StatelessWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF2A1850),
-                    Color(0xFF090A0F),
-                    Color(0xFF12324A),
+                    Color(0xFF3A1D73),
+                    Color(0xFF0B0D14),
+                    Color(0xFF06283A),
                   ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: -40,
+              right: -20,
+              child: Container(
+                width: 180,
+                height: 180,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0x668B5CFF),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -50,
+              left: 40,
+              child: Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0x3326C9FF),
                 ),
               ),
             ),
@@ -140,10 +147,7 @@ class _Hero extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0x00000000),
-                    Color(0xCC090A0F),
-                  ],
+                  colors: [Color(0x00000000), Color(0xE607080C)],
                 ),
               ),
             ),
@@ -152,13 +156,19 @@ class _Hero extends StatelessWidget {
               left: 12,
               child: InkWell(
                 onTap: onVip,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFB8FF4A),
-                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFFC8FF4A),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x66C8FF4A),
+                        blurRadius: 16,
+                      ),
+                    ],
                   ),
                   child: const Icon(
                     Icons.workspace_premium,
@@ -171,13 +181,14 @@ class _Hero extends StatelessWidget {
             const Positioned(
               left: 16,
               right: 16,
-              bottom: 18,
+              bottom: 16,
               child: Text(
-                'VYROX AI STUDIO',
+                'VYROX AI\nSTUDIO',
                 style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.4,
+                  fontSize: 34,
+                  height: 0.95,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -1,
                 ),
               ),
             ),
@@ -202,19 +213,19 @@ class _ToolBoard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 16, 10, 8),
+      padding: const EdgeInsets.fromLTRB(8, 14, 8, 6),
       decoration: BoxDecoration(
-        color: VyroxColors.card,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: VyroxColors.line),
+        color: const Color(0xFF12141C),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: const Color(0xFF262A38)),
       ),
       child: GridView.count(
         crossAxisCount: 3,
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 4,
-        childAspectRatio: 0.92,
+        mainAxisSpacing: 4,
+        crossAxisSpacing: 2,
+        childAspectRatio: 1.02,
         children: [
           for (final tool in tools)
             _ToolCell(
@@ -260,18 +271,16 @@ class _ToolCell extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 42,
-            height: 36,
+            width: 46,
+            height: 34,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                Center(
-                  child: Icon(icon, color: Colors.white, size: 28),
-                ),
+                Center(child: Icon(icon, color: Colors.white, size: 26)),
                 if (badge != null)
                   Positioned(
-                    top: -6,
-                    right: -10,
+                    top: -8,
+                    right: -8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 6,
@@ -280,7 +289,7 @@ class _ToolCell extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: badge == 'Turbo'
                             ? const Color(0xFF3D7CFF)
-                            : VyroxColors.accent,
+                            : const Color(0xFF9B6CFF),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -295,15 +304,15 @@ class _ToolCell extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             label,
             textAlign: TextAlign.center,
             maxLines: 2,
             style: const TextStyle(
               fontSize: 12,
-              height: 1.15,
-              color: Color(0xFFB9B9C6),
+              height: 1.1,
+              color: Color(0xFFB7B7C5),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -313,15 +322,9 @@ class _ToolCell extends StatelessWidget {
   }
 }
 
-class _GradientAction extends StatelessWidget {
-  const _GradientAction({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
+class _NewProject extends StatelessWidget {
+  const _NewProject({required this.onTap});
 
-  final String label;
-  final IconData icon;
   final VoidCallback onTap;
 
   @override
@@ -330,32 +333,26 @@ class _GradientAction extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(22),
       child: Ink(
-        height: 86,
+        height: 78,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
           gradient: const LinearGradient(
-            colors: [Color(0xFF7C5CFF), Color(0xFFD6FF4A)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [Color(0xFF7A5CFF), Color(0xFFD8FF57)],
           ),
         ),
-        child: Column(
+        child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: const BoxDecoration(
-                color: Colors.black,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, size: 18, color: Colors.white),
-            ),
-            const SizedBox(height: 8),
+            Icon(Icons.add_circle, color: Colors.black, size: 26),
+            SizedBox(height: 4),
             Text(
-              label,
-              style: const TextStyle(
+              'New Project',
+              style: TextStyle(
                 color: Colors.black,
-                fontWeight: FontWeight.w800,
-                fontSize: 16,
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
               ),
             ),
           ],
@@ -365,15 +362,9 @@ class _GradientAction extends StatelessWidget {
   }
 }
 
-class _DarkAction extends StatelessWidget {
-  const _DarkAction({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
+class _Resources extends StatelessWidget {
+  const _Resources({required this.onTap});
 
-  final String label;
-  final IconData icon;
   final VoidCallback onTap;
 
   @override
@@ -382,20 +373,20 @@ class _DarkAction extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(22),
       child: Ink(
-        height: 86,
+        height: 78,
         decoration: BoxDecoration(
-          color: VyroxColors.card,
+          color: const Color(0xFF12141C),
           borderRadius: BorderRadius.circular(22),
-          border: Border.all(color: VyroxColors.line),
+          border: Border.all(color: const Color(0xFF262A38)),
         ),
-        child: Column(
+        child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white),
-            const SizedBox(height: 8),
+            Icon(Icons.auto_awesome, color: Colors.white),
+            SizedBox(height: 4),
             Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              'Resources',
+              style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ],
         ),
