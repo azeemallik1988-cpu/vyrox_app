@@ -76,24 +76,57 @@ class _CreateToolScreenState extends ConsumerState<CreateToolScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.tool.label)),
+      backgroundColor: VyroxColors.bg,
+      appBar: AppBar(
+        title: Text(widget.tool.label),
+        actions: [
+          if (turbo)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: GestureDetector(
+                onTap: () => context.push('/vip'),
+                child: Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFB8FF4A),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'VIP',
+                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          TextField(
-            controller: prompt,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Prompt',
-              filled: true,
-              fillColor: VyroxColors.card,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: VyroxColors.card,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: VyroxColors.line),
+            ),
+            child: TextField(
+              controller: prompt,
+              maxLines: 6,
+              style: const TextStyle(height: 1.4),
+              decoration: const InputDecoration(
+                hintText: 'Describe what you want to create…',
+                border: InputBorder.none,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           const Text('Style', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children: [
               for (final item in styles)
                 ChoiceChip(
@@ -118,34 +151,64 @@ class _CreateToolScreenState extends ConsumerState<CreateToolScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              const Text('Standard'),
-              Switch(
-                value: turbo,
-                onChanged: (value) => setState(() => turbo = value),
-              ),
-              const Text('Turbo'),
-              if (turbo) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => context.push('/vip'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: VyroxColors.accentSoft,
-                      borderRadius: BorderRadius.circular(99),
-                    ),
-                    child: const Text('VIP', style: TextStyle(fontWeight: FontWeight.w800)),
-                  ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: VyroxColors.card,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: VyroxColors.line),
+            ),
+            child: Row(
+              children: [
+                const Text('Standard'),
+                Switch(
+                  value: turbo,
+                  onChanged: (value) => setState(() => turbo = value),
                 ),
+                const Text('Turbo'),
+                const Spacer(),
+                if (turbo)
+                  GestureDetector(
+                    onTap: () => context.push('/vip'),
+                    child: const Text(
+                      'VIP',
+                      style: TextStyle(
+                        color: Color(0xFFB8FF4A),
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
               ],
-            ],
+            ),
           ),
           const SizedBox(height: 24),
-          FilledButton(
-            onPressed: _generate,
-            child: const Text('Generate'),
+          SizedBox(
+            height: 56,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF7C5CFF), Color(0xFFD6FF4A)],
+                ),
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: _generate,
+                  borderRadius: BorderRadius.circular(18),
+                  child: const Center(
+                    child: Text(
+                      'Generate',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
