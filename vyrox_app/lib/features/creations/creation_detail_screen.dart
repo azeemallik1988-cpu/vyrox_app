@@ -18,6 +18,7 @@ class CreationDetailScreen extends ConsumerWidget {
     final matches = items.where((e) => e.id == id);
     if (matches.isEmpty) {
       return Scaffold(
+        backgroundColor: VyroxColors.bg,
         appBar: AppBar(),
         body: const Center(child: Text('Creation removed')),
       );
@@ -25,15 +26,22 @@ class CreationDetailScreen extends ConsumerWidget {
     final item = matches.first;
 
     return Scaffold(
+      backgroundColor: VyroxColors.bg,
       appBar: AppBar(title: Text(item.type.label)),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          SizedBox(height: 240, child: GradientPlaceholder(seed: item.thumbnailSeed, borderRadius: 20)),
+          SizedBox(
+            height: 260,
+            child: GradientPlaceholder(seed: item.thumbnailSeed, borderRadius: 24),
+          ),
           const SizedBox(height: 16),
-          Text(item.prompt, style: const TextStyle(fontSize: 16)),
+          Text(item.prompt, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 8),
-          Text(item.status.name, style: const TextStyle(color: VyroxColors.muted)),
+          Text(
+            item.status.name,
+            style: const TextStyle(color: Color(0xFFB9B9C6)),
+          ),
           const SizedBox(height: 24),
           FilledButton(
             onPressed: () {
