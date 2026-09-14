@@ -30,19 +30,24 @@ class HomeScreen extends StatelessWidget {
               const Text('VYROX AI', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -4)),
               const Text('STUDIO', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -4)),
               const SizedBox(height: 24),
+
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.1),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.1,
+                ),
                 itemCount: tools.length,
                 itemBuilder: (_, i) {
                   final t = tools[i];
                   return GestureDetector(
                     onTap: () {
-                      // Open Create screen later; for now just feedback
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${t['label']} tapped'), duration: Duration(seconds: 1)),
-                      );
+                      // TODO: Replace with your Create page screen from lib/features/create/
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+                        backgroundColor: const Color(0xFF0F0C17),
+                        appBar: AppBar(title: Text(t['label'] as String)),
+                        body: Center(child: Text('${t['label']} Tool', style: const TextStyle(color: Colors.white))),
+                      )));
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -53,7 +58,11 @@ class HomeScreen extends StatelessWidget {
                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
                         Stack(alignment: Alignment.topRight, children: [
                           Icon(t['icon'], size: 30, color: Colors.white),
-                          Positioned(top: 0, right: 0, child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: t['c'], borderRadius: BorderRadius.circular(10)), child: Text(t['badge'], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)))),
+                          Positioned(top: 0, right: 0, child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: t['c'], borderRadius: BorderRadius.circular(10)),
+                            child: Text(t['badge'], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
+                          )),
                         ]),
                         const SizedBox(height: 8),
                         Text(t['label'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
@@ -62,23 +71,28 @@ class HomeScreen extends StatelessWidget {
                   );
                 },
               ),
+
               const SizedBox(height: 32),
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/explore'),
                 child: Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]), border: Border.all(color: Colors.white.withOpacity(0.12))),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                  ),
                   child: Row(children: [
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                      const SizedBox(height: 4),
-                      const Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70)),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+                      Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                      SizedBox(height: 4),
+                      Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70)),
                     ])),
                     const Icon(Icons.arrow_forward, color: Color(0xFFC8F560)),
                   ]),
                 ),
               ),
-              const SizedBox(height: 30), // kills overflow
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -90,7 +104,9 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (i) {
+          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('Create — swap with lib/features/create screen', style: TextStyle(color: Colors.white))))));
           if (i == 2) Navigator.pushNamed(context, '/explore');
+          if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('Creations — swap with lib/features/creations screen', style: TextStyle(color: Colors.white))))));
           if (i == 4) Navigator.pushNamed(context, '/profile');
         },
         items: const [
