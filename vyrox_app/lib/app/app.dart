@@ -1,25 +1,24 @@
 import 'package:flutter/material.dart';
+import '../features/home/home_screen.dart';
+import '../features/explore/explore_screen.dart';
+import '../features/profile/profile_screen.dart';
 
-import '../core/theme/vyrox_theme.dart';
-import 'router.dart';
+void main() => runApp(const VyroxApp());
 
-class VyroxApp extends StatefulWidget {
+class VyroxApp extends StatelessWidget {
   const VyroxApp({super.key});
 
   @override
-  State<VyroxApp> createState() => _VyroxAppState();
-}
-
-class _VyroxAppState extends State<VyroxApp> {
-  late final _router = buildRouter();
-
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'VYROX AI',
+    return MaterialApp(
+      title: 'Vyrox AI',
       debugShowCheckedModeBanner: false,
-      theme: VyroxTheme.dark(),
-      routerConfig: _router,
+      theme: ThemeData.dark(),
+      home: const HomeScreen(),
+      routes: {
+        '/explore': (context) => const ExploreScreen(),
+        '/profile': (context) => const ProfileScreen(),
+      },
     );
   }
 }
