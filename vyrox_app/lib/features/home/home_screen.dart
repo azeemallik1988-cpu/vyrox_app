@@ -1,19 +1,23 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
+import '../create/create_screen.dart';
+import '../creations/creations_screen.dart';
+import '../explore/explore_screen.dart';
+import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   final List<Map> tools = const [
-    {'icon': Icons.image, 'label': 'Image', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
-    {'icon': Icons.videocam, 'label': 'Video', 'badge': 'Turbo', 'c': Color(0xFF3B82F6)},
-    {'icon': Icons.audiotrack, 'label': 'Sound', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
-    {'icon': Icons.menu, 'label': 'Text', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
-    {'icon': Icons.zoom_in, 'label': 'Upscale', 'badge': 'Turbo', 'c': Color(0xFF3B82F6)},
-    {'icon': Icons.hide_image, 'label': 'Remove BG', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
-    {'icon': Icons.face, 'label': 'Avatar', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
-    {'icon': Icons.music_note, 'label': 'Music', 'badge': 'Turbo', 'c': Color(0xFF3B82F6)},
+    {'icon': Icons.image, 'label': 'Image', 'badge': 'Free', 'tag': 'Image'},
+    {'icon': Icons.videocam, 'label': 'Video', 'badge': 'Turbo', 'tag': 'Video'},
+    {'icon': Icons.audiotrack, 'label': 'Sound', 'badge': 'Free', 'tag': 'Sound'},
+    {'icon': Icons.menu, 'label': 'Text', 'badge': 'Free', 'tag': 'Text'},
+    {'icon': Icons.zoom_in, 'label': 'Upscale', 'badge': 'Turbo', 'tag': 'Upscale'},
+    {'icon': Icons.hide_image, 'label': 'Remove BG', 'badge': 'Free', 'tag': 'Remove BG'},
+    {'icon': Icons.face, 'label': 'Avatar', 'badge': 'Free', 'tag': 'Avatar'},
+    {'icon': Icons.music_note, 'label': 'Music', 'badge': 'Turbo', 'tag': 'Music'},
   ];
 
   @override
@@ -27,27 +31,49 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const Text('VYROX AI', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -4)),
-              const Text('STUDIO', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -4)),
+              const Text(
+                'VYROX AI',
+                style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -4,
+                  height: 0.95,
+                ),
+              ),
+              const Text(
+                'STUDIO',
+                style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFC8F560),
+                  letterSpacing: -4,
+                  height: 0.95,
+                ),
+              ),
               const SizedBox(height: 24),
 
+              // 8 Tools Grid
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.1,
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.1,
                 ),
                 itemCount: tools.length,
                 itemBuilder: (_, i) {
                   final t = tools[i];
                   return GestureDetector(
                     onTap: () {
-                      // TODO: Replace with your Create page screen from lib/features/create/
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
-                        backgroundColor: const Color(0xFF0F0C17),
-                        appBar: AppBar(title: Text(t['label'] as String)),
-                        body: Center(child: Text('${t['label']} Tool', style: const TextStyle(color: Colors.white))),
-                      )));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreateScreen(),
+                        ),
+                      );
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -55,43 +81,102 @@ class HomeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: Colors.white.withOpacity(0.08)),
                       ),
-                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Stack(alignment: Alignment.topRight, children: [
-                          Icon(t['icon'], size: 30, color: Colors.white),
-                          Positioned(top: 0, right: 0, child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: t['c'], borderRadius: BorderRadius.circular(10)),
-                            child: Text(t['badge'], style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white)),
-                          )),
-                        ]),
-                        const SizedBox(height: 8),
-                        Text(t['label'], style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
-                      ]),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              Icon(t['icon'], size: 30, color: Colors.white),
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: t['c'] as Color,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    t['badge'] as String,
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            t['label'] as String,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
 
               const SizedBox(height: 32),
+
+              // Discover Card
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/explore'),
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
-                    gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)],
+                    ),
                     border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
-                  child: Row(children: [
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
-                      Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
-                      SizedBox(height: 4),
-                      Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70)),
-                    ])),
-                    const Icon(Icons.arrow_forward, color: Color(0xFFC8F560)),
-                  ]),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              'Discover',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: -1,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Community prompts & trending tools',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward,
+                        color: Color(0xFFC8F560),
+                        size: 30,
+                      ),
+                    ],
+                  ),
                 ),
               ),
+
               const SizedBox(height: 30),
             ],
           ),
@@ -104,10 +189,15 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (i) {
-          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('Create — swap with lib/features/create screen', style: TextStyle(color: Colors.white))))));
-          if (i == 2) Navigator.pushNamed(context, '/explore');
-          if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const Scaffold(body: Center(child: Text('Creations — swap with lib/features/creations screen', style: TextStyle(color: Colors.white))))));
-          if (i == 4) Navigator.pushNamed(context, '/profile');
+          if (i == 1) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateScreen()));
+          } else if (i == 2) {
+            Navigator.pushNamed(context, '/explore');
+          } else if (i == 3) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
+          } else if (i == 4) {
+            Navigator.pushNamed(context, '/profile');
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
