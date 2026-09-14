@@ -1,17 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/auth/auth_controller.dart';
 import '../../core/theme/vyrox_theme.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
-  void _snack(BuildContext context, String text) {
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  int credits = 120;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCredits();
+  }
+
+  Future<void> _loadCredits() async {
+    if (!AuthController.enabled) return;
+    try {
+      final value = await AuthController.credits();
+      if (mounted) setState(() => credits = value);
+    } catch (_) {}
+  }
+
+  Future<void> _openLogin() async {
+    final ok = await context.push<bool>('/login');
+    if (ok == true && mounted) {
+      setState(() {});
+      await _loadCredits();
+    }
+  }
+
+  void _snack(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = AuthController.user;
+    final signedIn = user != null;
+
     return ColoredBox(
       color: VyroxColors.bg,
       child: SafeArea(
@@ -30,22 +63,42 @@ class ProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: VyroxColors.line),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  CircleAvatar(
+                  const CircleAvatar(
                     radius: 28,
                     backgroundColor: Color(0xFF2A1850),
                     child: Icon(Icons.person, color: Colors.white, size: 28),
                   ),
-                  SizedBox(width: 14),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Creator', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
-                        Text('Guest · sign in in Stage 3', style: TextStyle(color: Color(0xFFB9B9C6))),
+                        Text(
+                          signedIn ? (user.email ?? 'Creator') : 'Creator',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          signedIn ? 'Signed in' : 'Guest · sign in to save',
+                          style: const TextStyle(color: Color(0xFFB9B9C6)),
+                        ),
                       ],
                     ),
+                  ),
+                  TextButton(
+                    onPressed: signedIn
+                        ? () async {
+                            await AuthController.signOut();
+                            if (mounted) {
+                              setState(() => credits = 120);
+                            }
+                          }
+                        : _openLogin,
+                    child: Text(signedIn ? 'Sign out' : 'Sign in'),
                   ),
                 ],
               ),
@@ -65,8 +118,18 @@ class ProfileScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Plan · Free', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
-                        Text('Unlock Turbo and Avatar priority', style: TextStyle(color: Colors.black87)),
+                        Text(
+                          'Plan · Free',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          'Unlock Turbo and Avatar priority',
+                          style: TextStyle(color: Colors.black87),
+                        ),
                       ],
                     ),
                   ),
@@ -86,22 +149,27 @@ class ProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(18),
                 border: Border.all(color: VyroxColors.line),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.bolt, color: Color(0xFFB8FF4A)),
-                  SizedBox(width: 10),
-                  Expanded(child: Text('Credits', style: TextStyle(fontWeight: FontWeight.w700))),
-                  Text('120', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+                  const Icon(Icons.bolt, color: Color(0xFFB8FF4A)),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text('Credits', style: TextStyle(fontWeight: FontWeight.w700)),
+                  ),
+                  Text(
+                    '$credits',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 18),
-            _Tile(label: 'Appearance', onTap: () => _snack(context, 'Appearance')),
-            _Tile(label: 'Notifications', onTap: () => _snack(context, 'Notifications')),
-            _Tile(label: 'Help', onTap: () => _snack(context, 'Help')),
-            _Tile(label: 'Privacy Policy', onTap: () => _snack(context, 'Privacy Policy')),
-            _Tile(label: 'Terms', onTap: () => _snack(context, 'Terms')),
-            _Tile(label: 'About', onTap: () => _snack(context, 'About VYROX AI Studio')),
+            _Tile(label: 'Appearance', onTap: () => _snack('Appearance')),
+            _Tile(label: 'Notifications', onTap: () => _snack('Notifications')),
+            _Tile(label: 'Help', onTap: () => _snack('Help')),
+            _Tile(label: 'Privacy Policy', onTap: () => _snack('Privacy Policy')),
+            _Tile(label: 'Terms', onTap: () => _snack('Terms')),
+            _Tile(label: 'About', onTap: () => _snack('About VYROX AI Studio')),
           ],
         ),
       ),
