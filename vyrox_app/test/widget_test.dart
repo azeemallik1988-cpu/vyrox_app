@@ -1,69 +1,79 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vyrox_app/core/store.dart';
-import 'package:vyrox_app/main.dart';
-import 'package:vyrox_app/screens/creations.dart';
+import 'package:vyrox_app/app/app.dart';
+import 'package:vyrox_app/core/models/creation.dart';
+import 'package:vyrox_app/core/state/creations_notifier.dart';
+
+Future<void> _pumpApp(
+  WidgetTester tester, {
+  required Size size,
+}) async {
+  SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  await tester.binding.setSurfaceSize(size);
+  addTearDown(() => tester.binding.setSurfaceSize(null));
+
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
+      child: const VyroxApp(),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
 
 void main() {
-  setUp(() {
-    SharedPreferences.setMockInitialValues(<String, Object>{});
-    vyroxTab.value = 0;
-  });
-
-  Widget app(CreationsStore store) =>
-      VyroxScope(store: store, child: const VyroxApp());
-
-  testWidgets('phone layout shows bottom bar with 5 tabs', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(390, 844));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(app(CreationsStore()));
-    await tester.pump();
+  testWidgets('NavigationBar has 5 destinations on phone', (tester) async {
+    await _pumpApp(tester, size: const Size(390, 844));
 
     expect(find.byType(NavigationBar), findsOneWidget);
-    for (final String label in <String>[
-      'Home',
-      'Create',
-      'Explore',
-      'Creations',
-      'Profile',
-    ]) {
-      expect(find.text(label), findsWidgets);
-    }
+    expect(find.byType(NavigationRail), findsNothing);
+
+    final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    final labels = bar.destinations
+        .map((d) => (d as NavigationDestination).label)
+        .toList();
+    expect(labels, ['Home', 'Create', 'Explore', 'Creations', 'Profile']);
   });
 
-  testWidgets('wide layout shows navigation rail', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1200, 800));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
-
-    await tester.pumpWidget(app(CreationsStore()));
-    await tester.pump();
+  testWidgets('NavigationRail on wide layout', (tester) async {
+    await _pumpApp(tester, size: const Size(1200, 800));
 
     expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
+    final labels = rail.destinations.map((d) => (d.label as Text).data).toList();
+    expect(labels, ['Home', 'Create', 'Explore', 'Creations', 'Profile']);
   });
 
-  testWidgets('added creation appears in Creations screen', (tester) async {
-    final CreationsStore store = CreationsStore()
-      ..add(
-        Creation(
-          id: 'test-1',
-          type: CreationType.image,
-          prompt: 'Test prompt',
-          status: CreationStatus.done,
-          createdAt: DateTime(2024),
-          thumbnailSeed: 42,
-        ),
-      );
+  testWidgets('adding a Creation shows on Creations screen', (tester) async {
+    await _pumpApp(tester, size: const Size(390, 844));
 
-    await tester.pumpWidget(
-      VyroxScope(
-        store: store,
-        child: const MaterialApp(home: Scaffold(body: CreationsScreen())),
-      ),
-    );
-    await tester.pump();
+    final context = tester.element(find.byType(VyroxApp));
+    final container = ProviderScope.containerOf(context);
+    container.read(creationsProvider.notifier).add(
+          Creation(
+            id: 'test-1',
+            type: CreationType.image,
+            prompt: 'Neon city test',
+            status: CreationStatus.done,
+            createdAt: DateTime.now(),
+            thumbnailSeed: 42,
+          ),
+        );
 
-    expect(find.byType(CreationThumb), findsOneWidget);
+    await tester.tap(find.text('Creations'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Neon city test'), findsWidgets);
   });
 }
