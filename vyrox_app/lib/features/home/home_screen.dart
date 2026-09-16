@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../core/models/creation.dart';
 import '../create/create_tool_screen.dart';
 import '../creations/creations_screen.dart';
 import '../profile/profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
   final List<Map<String, dynamic>> tools = const [
     {'icon': Icons.image, 'label': 'Image', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
     {'icon': Icons.videocam, 'label': 'Video', 'badge': 'Turbo', 'c': Color(0xFF3B82F6)},
@@ -29,43 +29,27 @@ class HomeScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 8),
               const Text('VYROX AI', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -2, height: 1)),
-              const Text('STUDIO', style: TextStyle(fontSize:28, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -2, height: 1)),
+              const Text('STUDIO', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -2, height: 1)),
               const SizedBox(height: 24),
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.1,
-                ),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.0),
                 itemCount: tools.length,
                 itemBuilder: (context, i) {
                   final t = tools[i];
                   return GestureDetector(
                     onTap: () {},
                     child: Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF181228),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: Colors.white.withOpacity(0.08)),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Stack(
-                            alignment: Alignment.topRight,
-                            children: [
-                              Icon(t['icon'] as IconData, size: 28, color: Colors.white),
-                              Positioned(top: 2, right: 2, child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(color: t['c'] as Color, borderRadius: BorderRadius.circular(8)),
-                                child: Text(t['badge'] as String, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white)),
-                              )),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(t['label'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
-                        ],
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFF181228), borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white.withOpacity(0.08))),
+                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Stack(alignment: Alignment.topRight, children: [
+                          Icon(t['icon'] as IconData, size: 26, color: Colors.white),
+                          Positioned(top: 2, right: 2, child: Container(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1), decoration: BoxDecoration(color: t['c'] as Color, borderRadius: BorderRadius.circular(8)), child: Text(t['badge'] as String, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white)))),
+                        ]),
+                        const SizedBox(height: 6),
+                        Text(t['label'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                      ]),
                     ),
                   );
                 },
@@ -75,11 +59,7 @@ class HomeScreen extends StatelessWidget {
                 onTap: () => Navigator.pushNamed(context, '/explore'),
                 child: Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
-                    gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]),
-                    border: Border.all(color: Colors.white.withOpacity(0.12)),
-                  ),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]), border: Border.all(color: Colors.white.withOpacity(0.12))),
                   child: Row(children: [
                     Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
                       Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -102,7 +82,7 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (i) {
-          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: CreationType 'Image' )));
+          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: 'Image')));
           else if (i == 2) Navigator.pushNamed(context, '/explore');
           else if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
           else if (i == 4) Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
