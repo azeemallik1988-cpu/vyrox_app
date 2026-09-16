@@ -58,7 +58,7 @@ class CreationsScreen extends StatelessWidget {
         currentIndex: 3,
         onTap: (i) {
           if (i == 0) Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
-          else if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateScreen()));
+          else if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: 'Image')));
           else if (i == 2) Navigator.pushNamed(context, '/explore');
           else if (i == 4) Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
         },
