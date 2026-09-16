@@ -6,16 +6,7 @@ class CreateToolScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> grid = const [
-      {'icon': Icons.image, 'label': 'Image'},
-      {'icon': Icons.videocam, 'label': 'Video'},
-      {'icon': Icons.audiotrack, 'label': 'Sound'},
-      {'icon': Icons.menu, 'label': 'Text'},
-      {'icon': Icons.zoom_in, 'label': 'Upscale'},
-      {'icon': Icons.hide_image, 'label': 'Remove BG'},
-      {'icon': Icons.face, 'label': 'Avatar'},
-      {'icon': Icons.music_note, 'label': 'Music'},
-    ];
+    final String t = tool ?? 'Image';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F0C17),
@@ -23,61 +14,136 @@ class CreateToolScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Create', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(t, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 0.9),
-              itemCount: grid.length,
-              itemBuilder: (context, i) {
-                final t = grid[i];
-                return Container(
-                  decoration: BoxDecoration(color: const Color(0xFF181228), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.white.withOpacity(0.08))),
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Icon(t['icon'] as IconData, size: 24, color: Colors.white),
-                    const SizedBox(height: 4),
-                    Text(t['label'] as String, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Colors.white)),
-                  ]),
-                );
-              },
-            ),
-            const SizedBox(height: 24),
+            // Prompt box
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(color: const Color(0xFF181228), borderRadius: BorderRadius.circular(24)),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Describe what you want to create...', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                const SizedBox(height: 12),
-                TextField(
-                  maxLines: 3,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(filled: true, fillColor: const Color(0xFF0D0A14), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none), hintText: 'A cinematic portrait...', hintStyle: const TextStyle(color: Colors.white38)),
+              child: TextField(
+                maxLines: 4,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: _hintFor(t),
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 16),
                 ),
-              ]),
+              ),
             ),
-            const SizedBox(height: 16),
-            const Text('Style', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 8),
-            Wrap(spacing: 8, children: ['Cinematic', 'Realistic', 'Anime', 'Noir'].map((s) => ChoiceChip(label: Text(s), selected: s == 'Cinematic', onSelected: (_) {}, selectedColor: const Color(0xFF7B4FCE), labelStyle: const TextStyle(color: Colors.white), backgroundColor: const Color(0xFF181228))).toList()),
-            const SizedBox(height: 16),
-            const Text('Aspect ratio', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-            const SizedBox(height: 8),
-            Wrap(spacing: 8, children: ['1:1', '16:9', '9:16'].map((r) => ChoiceChip(label: Text(r), selected: r == '1:1', onSelected: (_) {}, selectedColor: const Color(0xFF7B4FCE), labelStyle: const TextStyle(color: Colors.white), backgroundColor: const Color(0xFF181228))).toList()),
+            const SizedBox(height: 20),
+
+            // Options change per tool
+            ..._optionsFor(t),
+
             const SizedBox(height: 24),
-            SizedBox(width: double.infinity, child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B4FCE), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), elevation: 0),
-              onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Mock done — real engine in Stage 4'))),
-              child: const Text('Generate', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            )),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7B4FCE),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('$t generating (mock) — real engine in Stage 4'), duration: const Duration(seconds: 2)),
+                  );
+                },
+                child: Text('Generate $t', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
+
+  String _hintFor(String t) {
+    switch (t) {
+      case 'Video': return 'Describe your video scene...';
+      case 'Sound': return 'Describe the sound or ambience...';
+      case 'Music': return 'Describe the music mood, genre...';
+      case 'Text': return 'What text do you want to generate?';
+      case 'Avatar': return 'Describe your avatar...';
+      case 'Upscale': return 'Upload or describe image to upscale...';
+      case 'Remove BG': return 'Upload image to remove background...';
+      default: return 'Describe what you want to create...';
+    }
+  }
+
+  List<Widget> _optionsFor(String t) {
+    if (t == 'Image' || t == 'Avatar') {
+      return [
+        _label('Style'),
+        _chips(['Cinematic', 'Realistic', 'Anime', 'Noir']),
+        const SizedBox(height: 16),
+        _label('Aspect ratio'),
+        _chips(['1:1', '16:9', '9:16']),
+      ];
+    }
+    if (t == 'Video') {
+      return [
+        _label('Duration'),
+        _chips(['5s', '10s', '15s']),
+        const SizedBox(height: 16),
+        _label('Aspect ratio'),
+        _chips(['16:9', '9:16', '1:1']),
+      ];
+    }
+    if (t == 'Music' || t == 'Sound') {
+      return [
+        _label('Genre'),
+        _chips(['Ambient', 'Cinematic', 'Lo-fi', 'Epic']),
+        const SizedBox(height: 16),
+        _label('Length'),
+        _chips(['30s', '1 min', '2 min']),
+      ];
+    }
+    if (t == 'Text') {
+      return [
+        _label('Tone'),
+        _chips(['Formal', 'Casual', 'Creative', 'Marketing']),
+      ];
+    }
+    if (t == 'Upscale') {
+      return [
+        _label('Scale'),
+        _chips(['2x', '4x', '8x']),
+      ];
+    }
+    if (t == 'Remove BG') {
+      return [
+        _label('Output'),
+        _chips(['Transparent', 'White', 'Black']),
+      ];
+    }
+    return [];
+  }
+
+  Widget _label(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+  );
+
+  Widget _chips(List<String> items) => Wrap(
+    spacing: 8,
+    runSpacing: 8,
+    children: items.asMap().entries.map((e) {
+      return ChoiceChip(
+        label: Text(e.value),
+        selected: e.key == 0,
+        onSelected: (_) {},
+        selectedColor: const Color(0xFF7B4FCE),
+        labelStyle: const TextStyle(color: Colors.white),
+        backgroundColor: const Color(0xFF181228),
+      );
+    }).toList(),
+  );
 }
