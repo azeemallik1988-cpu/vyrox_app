@@ -124,8 +124,9 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (i) {
-          if (i == 1) {
+            if (i == 1) {
             // Create tab — opens Create screen when you build it
+          }
           } else if (i == 2) {
             Navigator.pushNamed(context, '/explore');
           } else if (i == 3) {
