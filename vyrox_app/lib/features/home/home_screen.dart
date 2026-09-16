@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../create/create_screen.dart';
-import '../creations/creations_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -27,15 +26,30 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const Text('VYROX AI', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -4, height: 1)),
-              const Text('STUDIO', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -4, height: 1)),
+              const Text(
+                'VYROX AI',
+                style: TextStyle(
+                  fontSize: 32, fontWeight: FontWeight.bold,
+                  color: Colors.white, letterSpacing: -4, height: 1,
+                ),
+              ),
+              const Text(
+                'STUDIO',
+                style: TextStyle(
+                  fontSize: 32, fontWeight: FontWeight.bold,
+                  color: Color(0xFFC8F560), letterSpacing: -4, height: 1,
+                ),
+              ),
               const SizedBox(height: 24),
 
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.1,
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.1,
                 ),
                 itemCount: tools.length,
                 itemBuilder: (context, i) {
@@ -65,7 +79,9 @@ class HomeScreen extends StatelessWidget {
                                   ),
                                   child: Text(
                                     t['badge'] as String,
-                                    style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white),
+                                    style: const TextStyle(
+                                      fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -74,7 +90,9 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(height: 6),
                           Text(
                             t['label'] as String,
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                            style: const TextStyle(
+                              fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white,
+                            ),
                           ),
                         ],
                       ),
@@ -91,7 +109,11 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
-                    gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)],
+                    ),
                     border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
                   child: Row(
@@ -112,7 +134,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 50),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -124,13 +146,15 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (i) {
-            if (i == 1) {
+          if (i == 1) {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateScreen()));
-          }
           } else if (i == 2) {
             Navigator.pushNamed(context, '/explore');
           } else if (i == 3) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const Scaffold(
+              backgroundColor: Color(0xFF0F0C17),
+              body: Center(child: Text('Creations', style: TextStyle(color: Colors.white, fontSize: 24))),
+            )));
           } else if (i == 4) {
             Navigator.pushNamed(context, '/profile');
           }
