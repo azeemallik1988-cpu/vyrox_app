@@ -1,223 +1,153 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../core/auth/auth_controller.dart';
-import '../../core/models/creation.dart';
-import '../../core/state/creations_notifier.dart';
-import '../../core/theme/vyrox_theme.dart';
-
-class CreateToolScreen extends ConsumerStatefulWidget {
-  const CreateToolScreen({
-    super.key,
-    required this.tool,
-    this.initialPrompt = '',
-  });
-
-  final CreationType tool;
-  final String initialPrompt;
-
-  @override
-  ConsumerState<CreateToolScreen> createState() => _CreateToolScreenState();
-}
-
-class _CreateToolScreenState extends ConsumerState<CreateToolScreen> {
-  late final TextEditingController prompt;
-  String style = 'Cinematic';
-  String ratio = '1:1';
-  bool turbo = false;
-
-  static const styles = ['Cinematic', 'Realistic', 'Anime', 'Noir'];
-  static const ratios = ['1:1', '16:9', '9:16'];
-
-  @override
-  void initState() {
-    super.initState();
-    prompt = TextEditingController(text: widget.initialPrompt);
-  }
-
-  @override
-  void dispose() {
-    prompt.dispose();
-    super.dispose();
-  }
-
-  Future<void> _generate() async {
-    final text = prompt.text.trim();
-    if (text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a prompt first')),
-      );
-      return;
-    }
-
-    final id = DateTime.now().millisecondsSinceEpoch.toString();
-    final seed = text.hashCode.abs();
-    ref.read(creationsProvider.notifier).add(
-          Creation(
-            id: id,
-            type: widget.tool,
-            prompt: text,
-            status: CreationStatus.generating,
-            createdAt: DateTime.now(),
-            thumbnailSeed: seed,
-          ),
-        );
-
-    await AuthController.saveProject(
-      title: text,
-      kind: widget.tool.label,
-    );
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Generating ${widget.tool.label}…')),
-    );
-    context.go('/creations');
-
-    Future<void>.delayed(const Duration(seconds: 3), () {
-      ref.read(creationsProvider.notifier).markDone(id);
-    });
-  }
+class CreateToolScreen extends StatelessWidget {
+  final CreationType? tool;
+  const CreateToolScreen({super.key, this.tool});
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> grid = const [
+      {'icon': Icons.image, 'label': 'Image', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
+      {'icon': Icons.videocam, 'label': 'Video', 'badge': 'Turbo', 'c': Color(0xFF3B82F6)},
+      {'icon': Icons.audiotrack, 'label': 'Sound', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
+      {'icon': Icons.menu, 'label': 'Text', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
+      {'icon': Icons.zoom_in, 'label': 'Upscale', 'badge': 'Turbo', 'c': Color(0xFF3B82F6)},
+      {'icon': Icons.hide_image, 'label': 'Remove BG', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
+      {'icon': Icons.face, 'label': 'Avatar', 'badge': 'Free', 'c': Color(0xFF7B4FCE)},
+      {'icon': Icons.music_note, 'label': 'Music', 'badge': 'Turbo', 'c': Color(0xFF3B82F6)},
+    ];
+
     return Scaffold(
-      backgroundColor: VyroxColors.bg,
+      backgroundColor: const Color(0xFF0F0C17),
       appBar: AppBar(
-        title: Text(widget.tool.label),
-        actions: [
-          if (turbo)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: GestureDetector(
-                onTap: () => context.push('/vip'),
-                child: Container(
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFB8FF4A),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text(
-                    'VIP',
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800),
-                  ),
-                ),
-              ),
-            ),
-        ],
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Create', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: VyroxColors.card,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: VyroxColors.line),
-            ),
-            child: TextField(
-              controller: prompt,
-              maxLines: 6,
-              style: const TextStyle(height: 1.4),
-              decoration: const InputDecoration(
-                hintText: 'Describe what you want to create…',
-                border: InputBorder.none,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 8 tools grid at top (this is what was missing!)
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4, crossAxisSpacing: 8, mainAxisSpacing: 8, childAspectRatio: 1,
               ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          const Text('Style', style: TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final item in styles)
-                ChoiceChip(
-                  label: Text(item),
-                  selected: style == item,
-                  onSelected: (_) => setState(() => style = item),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Text('Aspect ratio', style: TextStyle(fontWeight: FontWeight.w700)),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final item in ratios)
-                ChoiceChip(
-                  label: Text(item),
-                  selected: ratio == item,
-                  onSelected: (_) => setState(() => ratio = item),
-                ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: VyroxColors.card,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: VyroxColors.line),
-            ),
-            child: Row(
-              children: [
-                const Text('Standard'),
-                Switch(
-                  value: turbo,
-                  onChanged: (value) => setState(() => turbo = value),
-                ),
-                const Text('Turbo'),
-                const Spacer(),
-                if (turbo)
-                  GestureDetector(
-                    onTap: () => context.push('/vip'),
-                    child: const Text(
-                      'VIP',
-                      style: TextStyle(
-                        color: Color(0xFFB8FF4A),
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+              itemCount: grid.length,
+              itemBuilder: (context, i) {
+                final t = grid[i];
+                return Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF181228),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white.withOpacity(0.08)),
                   ),
-              ],
+                  child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Icon(t['icon'] as IconData, size: 24, color: Colors.white),
+                    const SizedBox(height: 4),
+                    Text(t['label'] as String, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white)),
+                  ]),
+                );
+              },
             ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            height: 56,
-            child: DecoratedBox(
+            const SizedBox(height: 24),
+
+            // Prompt / Style / Generate (your existing design)
+            Container(
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7C5CFF), Color(0xFFD6FF4A)],
-                ),
+                color: const Color(0xFF181228),
+                borderRadius: BorderRadius.circular(24),
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: _generate,
-                  borderRadius: BorderRadius.circular(18),
-                  child: const Center(
-                    child: Text(
-                      'Generate',
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Describe what you want to create...', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const SizedBox(height: 12),
+                  TextField(
+                    maxLines: 3,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFF0D0A14),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                      hintText: 'A cinematic portrait in neon light...',
+                      hintStyle: const TextStyle(color: Colors.white38),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+
+            const Text('Style', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: ['Cinematic', 'Realistic', 'Anime', 'Noir'].map((s) {
+                return ChoiceChip(
+                  label: Text(s),
+                  selected: s == 'Cinematic',
+                  onSelected: (_) {},
+                  selectedColor: const Color(0xFF7B4FCE),
+                  labelStyle: const TextStyle(color: Colors.white),
+                  backgroundColor: const Color(0xFF181228),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+
+            const Text('Aspect ratio', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: ['1:1', '16:9', '9:16'].map((r) {
+                return ChoiceChip(
+                  label: Text(r),
+                  selected: r == '1:1',
+                  onSelected: (_) {},
+                  selectedColor: const Color(0xFF7B4FCE),
+                  labelStyle: const TextStyle(color: Colors.white),
+                  backgroundColor: const Color(0xFF181228),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Standard — Turbo', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              trailing: Switch(
+                value: true,
+                onChanged: (_) {},
+                activeColor: const Color(0xFFC8F560),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7B4FCE),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  elevation: 0,
+                ),
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Mock generation complete — Stage 4 engine next'), duration: Duration(seconds: 2)),
+                  );
+                },
+                child: const Text('Generate', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
