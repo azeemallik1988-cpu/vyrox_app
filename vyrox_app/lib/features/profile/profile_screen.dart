@@ -62,7 +62,7 @@ class ProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text('Plan · Free', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-                          SizedBox(height: 4),
+                          SizedBox(height: 3),
                           Text('Unlock Turbo and Avatar priority', style: TextStyle(fontSize: 13, color: Colors.black87)),
                         ],
                       ),
