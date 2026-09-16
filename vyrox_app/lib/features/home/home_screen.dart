@@ -125,7 +125,7 @@ class HomeScreen extends StatelessWidget {
         currentIndex: 0,
         onTap: (i) {
             if (i == 1) {
-            // Create tab — opens Create screen when you build it
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateScreen()));
           }
           } else if (i == 2) {
             Navigator.pushNamed(context, '/explore');
