@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -15,7 +13,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Glass profile card — fixed with Expanded
+              // Glass card — Expanded stops right overflow
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
@@ -93,10 +91,7 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // Plan card — purple to lime
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -104,10 +99,7 @@ class ProfileScreen extends StatelessWidget {
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF7B4FCE),
-                      Color(0xFFC8F560),
-                    ],
+                    colors: [Color(0xFF7B4FCE), Color(0xFFC8F560)],
                   ),
                 ),
                 child: Row(
@@ -140,11 +132,8 @@ class ProfileScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
-                        shape: const StadiumBorder(),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
+                        shape: StadiumBorder(),
+                        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                         elevation: 0,
                       ),
                       child: const Text(
@@ -155,10 +144,7 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 16),
-
-              // Credits
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
                 decoration: BoxDecoration(
@@ -167,11 +153,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.bolt,
-                      color: Color(0xFFC8F560),
-                      size: 28,
-                    ),
+                    const Icon(Icons.bolt, color: Color(0xFFC8F560), size: 28),
                     const SizedBox(width: 12),
                     const Text(
                       'Credits',
@@ -193,16 +175,14 @@ class ProfileScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
               const SizedBox(height: 12),
-
-              const _MenuRow(title: 'Appearance', onTap: null),
+              _MenuRow(title: 'Appearance', onTap: () {}),
               const SizedBox(height: 10),
-              const _MenuRow(title: 'Notifications', onTap: null),
+              _MenuRow(title: 'Notifications', onTap: () {}),
               const SizedBox(height: 10),
-              const _MenuRow(title: 'Help', onTap: null),
+              _MenuRow(title: 'Help', onTap: () {}),
               const SizedBox(height: 10),
-              const _MenuRow(title: 'Privacy Policy', onTap: null),
+              _MenuRow(title: 'Privacy Policy', onTap: () {}),
               const SizedBox(height: 30),
             ],
           ),
@@ -230,7 +210,7 @@ class ProfileScreen extends StatelessWidget {
 class _MenuRow extends StatelessWidget {
   final String title;
   final VoidCallback? onTap;
-  const _MenuRow({required this.title, this.onTap, super.key});
+  const _MenuRow({required this.title, this.onTap, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
