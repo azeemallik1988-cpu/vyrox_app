@@ -62,34 +62,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: const Color(0xFF0F0C17),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // User Card
+              // User Card (Overflow-proof)
               Container(
-                padding: const EdgeInsets.all(22),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  border: Border.all(color: Colors.white.withOpacity(0.1)),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white.withOpacity(0.08)),
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF2D1B4E).withOpacity(0.5),
+                      const Color(0xFF2D1B4E).withOpacity(0.6),
                       const Color(0xFF0D0A14).withOpacity(0.95),
                     ],
                   ),
                 ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CircleAvatar(
-                      radius: 30,
+                      radius: 28,
                       backgroundColor: const Color(0xFF4A2A7A),
                       child: Icon(
                         isSignedIn ? Icons.person : Icons.person_outline,
-                        size: 30,
+                        size: 28,
                         color: Colors.white,
                       ),
                     ),
@@ -101,34 +100,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           Text(
                             userName,
                             style: const TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
-                              letterSpacing: -0.5,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Text(
                             userEmail,
                             style: const TextStyle(
                               fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white70,
+                              color: Colors.white60,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 8),
-                          Row(
+                          Wrap(
+                            spacing: 12,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Text(
-                                isSignedIn ? 'Signed in' : 'Not signed in',
-                                style: TextStyle(
-                                  color: isSignedIn ? const Color(0xFF10B981) : Colors.orangeAccent,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: isSignedIn
+                                      ? const Color(0xFF10B981).withOpacity(0.15)
+                                      : Colors.orange.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  isSignedIn ? 'Signed in' : 'Guest mode',
+                                  style: TextStyle(
+                                    color: isSignedIn ? const Color(0xFF10B981) : Colors.orangeAccent,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                              const Spacer(),
                               GestureDetector(
                                 onTap: isSignedIn ? _handleSignOut : _handleSignIn,
                                 child: Text(
@@ -136,7 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   style: TextStyle(
                                     color: isSignedIn ? const Color(0xFFA78BFA) : const Color(0xFFC8F560),
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 13,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ),
@@ -154,7 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(24),
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
