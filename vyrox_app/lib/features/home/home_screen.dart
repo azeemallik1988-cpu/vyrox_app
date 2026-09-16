@@ -39,7 +39,9 @@ class HomeScreen extends StatelessWidget {
                 itemBuilder: (context, i) {
                   final t = tools[i];
                   return GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => CreateToolScreen(tool: t['label'] as String)));
+                    },
                     child: Container(
                       decoration: BoxDecoration(color: const Color(0xFF181228), borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white.withOpacity(0.08))),
                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
