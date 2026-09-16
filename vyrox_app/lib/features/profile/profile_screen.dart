@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
-import '../create/create_tool_screen.dart';
+import '../create/create_hub_screen.dart';
 import '../creations/creations_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -15,7 +15,7 @@ class ProfileScreen extends StatelessWidget {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
               padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(28), border: Border.all(color: Colors.white.withOpacity(0.1)), gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF2D1B4E).withOpacity(0.5), Color(0xFF0D0A14).withOpacity(0.95)])),
+              decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(28), border: Border.all(color: Colors.white.withOpacity(0.1)), gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [const Color(0xFF2D1B4E).withOpacity(0.5), const Color(0xFF0D0A14).withOpacity(0.95)])),
               child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const CircleAvatar(radius: 32, backgroundColor: Color(0xFF4A2A7A), child: Icon(Icons.person, size: 32, color: Colors.white)),
                 const SizedBox(width: 14),
@@ -77,7 +77,7 @@ class ProfileScreen extends StatelessWidget {
         currentIndex: 4,
         onTap: (i) {
           if (i == 0) Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
-          else if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: 'Image')));
+          else if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateHubScreen()));
           else if (i == 2) Navigator.pushNamed(context, '/explore');
           else if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
         },
