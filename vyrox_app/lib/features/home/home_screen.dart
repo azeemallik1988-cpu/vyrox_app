@@ -42,15 +42,41 @@ class HomeScreen extends StatelessWidget {
                   return GestureDetector(
                     onTap: () {},
                     child: Container(
-                      decoration: BoxDecoration(color: const Color(0xFF181228), borderRadius: BorderRadius.circular(24), border: Border.all(color: Colors.white.withOpacity(0.08))),
-                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Stack(alignment: Alignment.topRight, children: [
-                          Icon(t['icon'] as IconData, size: 28, color: Colors.white),
-                          Positioned(top: 2, right: 2, child: Container(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1), decoration: BoxDecoration(color: t['c'] as Color, borderRadius: BorderRadius.circular(8)), child: Text(t['badge'] as String, style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white)))),
-                        ]),
-                        const SizedBox(height: 6),
-                        Text(t['label'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white)),
-                      ]),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF181228),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.white.withOpacity(0.08)),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              Icon(t['icon'] as IconData, size: 28, color: Colors.white),
+                              Positioned(
+                                top: 2, right: 2,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: t['c'] as Color,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    t['badge'] as String,
+                                    style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            t['label'] as String,
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -60,11 +86,26 @@ class HomeScreen extends StatelessWidget {
                 onTap: () => Navigator.pushNamed(context, '/explore'),
                 child: Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]), border: Border.all(color: Colors.white.withOpacity(0.12))),
-                  child: Row(children: [
-                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)), SizedBox(height: 4), Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70))])),
-                    const Icon(Icons.arrow_forward, color: Color(0xFFC8F560)),
-                  ]),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                            SizedBox(height: 4),
+                            Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70)),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward, color: Color(0xFFC8F560)),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 50),
@@ -79,10 +120,15 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (i) {
-          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool:'Image')));
-          else if (i == 2) Navigator.pushNamed(context, '/explore');
-          else if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
-          else if (i == 4) Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+          if (i == 1) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: 'Image')));
+          } else if (i == 2) {
+            Navigator.pushNamed(context, '/explore');
+          } else if (i == 3) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
+          } else if (i == 4) {
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+          }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
