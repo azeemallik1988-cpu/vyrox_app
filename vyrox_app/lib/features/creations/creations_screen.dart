@@ -11,26 +11,60 @@ class CreationsScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text('Creations', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('All', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+            const Text('All', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -2)),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF181228),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: const [
+                  Text('All', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                  Text('Images', style: TextStyle(color: Colors.white60)),
+                  Text('Videos', style: TextStyle(color: Colors.white60)),
+                  Text('Audio', style: TextStyle(color: Colors.white60)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Center(child: Icon(Icons.auto_awesome, size: 80, color: Colors.white12)),
             const SizedBox(height: 12),
-            const Text('No creations yet. Open Create and generate one.', style: TextStyle(color: Colors.white70)),
-            const SizedBox(height: 20),
-            Wrap(
-              spacing: 10,
-              children: const [
-                ChoiceChip(label: Text('All'), selected: true),
-                ChoiceChip(label: Text('Images'), selected: false),
-                ChoiceChip(label: Text('Videos'), selected: false),
-              ],
+            const Text(
+              'No creations yet.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 18, color: Colors.white54),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Open Create and generate one.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.white38),
             ),
             const SizedBox(height: 30),
-            const Center(child: Icon(Icons.auto_awesome, size: 60, color: Colors.white24)),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7B4FCE),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  elevation: 0,
+                ),
+                onPressed: () => Navigator.pushNamed(context, '/'),
+                child: const Text('Go to Studio', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+            ),
           ],
         ),
       ),
