@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../create/create_screen.dart';
+import '../create/create_tool_screen.dart';
 import '../creations/creations_screen.dart';
 import '../explore/explore_screen.dart';
 import '../profile/profile_screen.dart';
@@ -79,7 +79,7 @@ class HomeScreen extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         currentIndex: 0,
         onTap: (i) {
-          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateScreen()));
+          if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen()));
           else if (i == 2) Navigator.pushNamed(context, '/explore');
           else if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
           else if (i == 4) Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
