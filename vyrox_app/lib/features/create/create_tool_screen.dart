@@ -1,35 +1,27 @@
 import 'package:flutter/material.dart';
+import 'image_result_screen.dart';
+import 'package:flutter/material.dart';
+import '../../core/auth/auth_controller.dart';
 
 class CreateToolScreen extends StatefulWidget {
-  const CreateToolScreen({super.key, this.tool});
-
-  // Matches the String-based calls in your current Home and Create hub.
   final String? tool;
+  const CreateToolScreen({super.key, this.tool});
 
   @override
   State<CreateToolScreen> createState() => _CreateToolScreenState();
 }
 
 class _CreateToolScreenState extends State<CreateToolScreen> {
-  static const _background = Color(0xFF0F0C17);
-  static const _surface = Color(0xFF181228);
-  static const _purple = Color(0xFF7B4FCE);
-
-  final _promptController = TextEditingController();
-
-  // Stores each group's selection separately.
-  final Map<String, String> _selectedOptions = {};
-
-  String get _tool => widget.tool ?? 'Image';
+  late String _tool;
+  int _selectedOption1 = 0;
+  int _selectedOption2 = 0;
+  bool _isSaving = false;
+  final TextEditingController _promptController = TextEditingController();
 
   @override
-  void didUpdateWidget(covariant CreateToolScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.tool != widget.tool) {
-      _selectedOptions.clear();
-      _promptController.clear();
-    }
+  void initState() {
+    super.initState();
+    _tool = widget.tool ?? 'Image';
   }
 
   @override
@@ -38,272 +30,244 @@ class _CreateToolScreenState extends State<CreateToolScreen> {
     super.dispose();
   }
 
-  Map<String, List<String>> _optionsFor(String tool) {
-    switch (tool) {
-      case 'Image':
-      case 'Avatar':
-        return const {
-          'Style': ['Cinematic', 'Realistic', 'Anime', 'Noir'],
-          'Aspect ratio': ['1:1', '16:9', '9:16'],
-        };
-
-      case 'Video':
-        return const {
-          'Duration': ['5s', '10s', '15s'],
-          'Aspect ratio': ['16:9', '9:16', '1:1'],
-        };
-
-      case 'Sound':
-      case 'Music':
-        return const {
-          'Genre': ['Ambient', 'Cinematic', 'Lo-fi', 'Epic'],
-          'Length': ['30s', '1 min', '2 min'],
-        };
-
-      case 'Text':
-        return const {
-          'Tone': ['Formal', 'Casual', 'Creative', 'Marketing'],
-        };
-
-      case 'Upscale':
-        return const {
-          'Scale': ['2x', '4x', '8x'],
-        };
-
-      case 'Remove BG':
-        return const {
-          'Output': ['Transparent', 'White', 'Black'],
-        };
-
-      default:
-        return const {};
-    }
-  }
-
-  String _hintFor(String tool) {
-    switch (tool) {
-      case 'Video':
-        return 'Describe your video scene...';
-      case 'Sound':
-        return 'Describe the sound or ambience...';
-      case 'Music':
-        return 'Describe the music mood and genre...';
-      case 'Text':
-        return 'What would you like to write?';
-      case 'Avatar':
-        return 'Describe your avatar...';
-      case 'Upscale':
-        return 'Add a note about the image you want to enhance...';
-      case 'Remove BG':
-        return 'Add a note about the background you want removed...';
-      default:
-        return 'Describe what you want to create...';
-    }
-  }
-
-  Widget _buildOptionGroup(String title, List<String> options) {
-    final selectedValue = _selectedOptions[title] ?? options.first;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final option in options)
-                ChoiceChip(
-                  label: Text(option),
-                  selected: selectedValue == option,
-                  onSelected: (isSelected) {
-                    if (isSelected) {
-                      setState(() {
-                        _selectedOptions[title] = option;
-                      });
-                    }
-                  },
-                  showCheckmark: true,
-                  checkmarkColor: Colors.white,
-                  selectedColor: _purple,
-                  backgroundColor: _surface,
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _reviewSettings() {
+  Future<void> _handleGenerate() async {
     final prompt = _promptController.text.trim();
 
     if (prompt.isEmpty) {
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.hideCurrentSnackBar();
-      messenger.showSnackBar(
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter a prompt or note first.'),
+          backgroundColor: Colors.orangeAccent,
+          content: Text('Please describe what you want to create'),
         ),
       );
       return;
     }
 
-    FocusScope.of(context).unfocus();
+    // REAL IMAGE GENERATION
+    if (_tool == 'Image' || _tool == 'Avatar') {
+      final styles = ['Cinematic', 'Realistic', 'Anime', 'Noir'];
+      final ratios = ['1:1', '16:9', '9:16'];
 
-    final groups = _optionsFor(_tool);
-    final settings = groups.entries.map((entry) {
-      final value = _selectedOptions[entry.key] ?? entry.value.first;
-      return '${entry.key}: $value';
-    }).join('\n');
-
-    // UI demonstration only: no engine request or project save.
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          scrollable: true,
-          title: Text('$_tool settings'),
-          content: Text(
-            'Prompt:\n$prompt\n\n'
-            '$settings\n\n'
-            'Demo only. No media has been generated or saved.',
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImageResultScreen(
+            prompt: prompt,
+            style: styles[_selectedOption1],
+            aspectRatio: ratios[_selectedOption2],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Close'),
-            ),
-          ],
+        ),
+      );
+      return;
+    }
+
+    // Other tools — mock for now (Stage 5)
+    setState(() => _isSaving = true);
+    try {
+      await AuthController.saveProject(title: prompt, kind: _tool.toLowerCase());
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF10B981),
+            content: Text('✨ $_tool project saved! Real engine coming in Stage 5.'),
+            duration: const Duration(seconds: 2),
+          ),
         );
-      },
-    );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(backgroundColor: Colors.redAccent, content: Text('Save error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final optionGroups = _optionsFor(_tool);
-    final needsImage = _tool == 'Upscale' || _tool == 'Remove BG';
-
     return Scaffold(
-      backgroundColor: _background,
+      backgroundColor: const Color(0xFF0F0C17),
       appBar: AppBar(
-        backgroundColor: _background,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          _tool,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: Text(_tool, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF181228),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.white.withOpacity(0.06)),
+              ),
+              child: TextField(
                 controller: _promptController,
-                minLines: 4,
-                maxLines: 6,
-                keyboardType: TextInputType.multiline,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  height: 1.4,
-                ),
+                maxLines: 4,
+                style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
-                  filled: true,
-                  fillColor: _surface,
-                  contentPadding: const EdgeInsets.all(20),
+                  border: InputBorder.none,
                   hintText: _hintFor(_tool),
-                  hintStyle: const TextStyle(
-                    color: Colors.white54,
-                    fontSize: 16,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
-                    borderSide: BorderSide.none,
-                  ),
+                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 16),
                 ),
               ),
-              const SizedBox(height: 24),
-
-              for (final group in optionGroups.entries)
-                _buildOptionGroup(group.key, group.value),
-
-              if (needsImage) ...[
-                const Text(
-                  'Image upload and processing are not connected '
-                  'in this demo yet.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                  ),
+            ),
+            const SizedBox(height: 24),
+            ..._buildDynamicOptions(_tool),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF7B4FCE),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  elevation: 0,
                 ),
-                const SizedBox(height: 12),
-              ],
-
-              const Text(
-                'Demo mode: Generate reviews your prompt and settings only.',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 13,
-                ),
+                onPressed: _isSaving ? null : _handleGenerate,
+                child: _isSaving
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      )
+                    : Text(
+                        'Generate $_tool',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
               ),
-              const SizedBox(height: 12),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _reviewSettings,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _purple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Generate $_tool (demo)',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  String _hintFor(String t) {
+    switch (t) {
+      case 'Video':
+        return 'Describe your video scene...';
+      case 'Sound':
+        return 'Describe the sound or ambience...';
+      case 'Music':
+        return 'Describe the music mood, genre...';
+      case 'Text':
+        return 'What text do you want to generate?';
+      case 'Avatar':
+        return 'Describe your avatar...';
+      case 'Upscale':
+        return 'Describe image details to upscale...';
+      case 'Remove BG':
+        return 'Describe image to remove background...';
+      default:
+        return 'Describe what you want to create...';
+    }
+  }
+
+  List<Widget> _buildDynamicOptions(String t) {
+    if (t == 'Image' || t == 'Avatar') {
+      return [
+        _label('Style'),
+        _chips(['Cinematic', 'Realistic', 'Anime', 'Noir'], isOption1: true),
+        const SizedBox(height: 20),
+        _label('Aspect ratio'),
+        _chips(['1:1', '16:9', '9:16'], isOption1: false),
+      ];
+    }
+    if (t == 'Video') {
+      return [
+        _label('Duration'),
+        _chips(['5s', '10s', '15s'], isOption1: true),
+        const SizedBox(height: 20),
+        _label('Aspect ratio'),
+        _chips(['16:9', '9:16', '1:1'], isOption1: false),
+      ];
+    }
+    if (t == 'Music' || t == 'Sound') {
+      return [
+        _label('Genre'),
+        _chips(['Ambient', 'Cinematic', 'Lo-fi', 'Epic'], isOption1: true),
+        const SizedBox(height: 20),
+        _label('Length'),
+        _chips(['30s', '1 min', '2 min'], isOption1: false),
+      ];
+    }
+    if (t == 'Text') {
+      return [
+        _label('Tone'),
+        _chips(['Formal', 'Casual', 'Creative', 'Marketing'], isOption1: true),
+      ];
+    }
+    if (t == 'Upscale') {
+      return [
+        _label('Scale'),
+        _chips(['2x', '4x', '8x'], isOption1: true),
+      ];
+    }
+    if (t == 'Remove BG') {
+      return [
+        _label('Output'),
+        _chips(['Transparent', 'White', 'Black'], isOption1: true),
+      ];
+    }
+    return [];
+  }
+
+  Widget _label(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Text(
+        text,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _chips(List<String> items, {required bool isOption1}) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: items.asMap().entries.map((entry) {
+        final int index = entry.key;
+        final String label = entry.value;
+        final bool isSelected = isOption1 ? _selectedOption1 == index : _selectedOption2 == index;
+
+        return ChoiceChip(
+          label: Text(label),
+          selected: isSelected,
+          onSelected: (bool selected) {
+            if (selected) {
+              setState(() {
+                if (isOption1) {
+                  _selectedOption1 = index;
+                } else {
+                  _selectedOption2 = index;
+                }
+              });
+            }
+          },
+          selectedColor: const Color(0xFF7B4FCE),
+          backgroundColor: const Color(0xFF181228),
+          checkmarkColor: Colors.white,
+          labelStyle: TextStyle(
+            color: isSelected ? Colors.white : Colors.white70,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: isSelected ? const Color(0xFF7B4FCE) : Colors.white.withOpacity(0.12),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
