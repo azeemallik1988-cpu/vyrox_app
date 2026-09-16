@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/models/creation.dart';
 import '../home/home_screen.dart';
 import '../create/create_tool_screen.dart';
 import '../creations/creations_screen.dart';
@@ -109,7 +110,7 @@ class ProfileScreen extends StatelessWidget {
         currentIndex: 4,
         onTap: (i) {
           if (i == 0) Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
-          else if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: 'Image')));
+          else if (i == 1) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: CreationType.image)));
           else if (i == 2) Navigator.pushNamed(context, '/explore');
           else if (i == 3) Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
         },
