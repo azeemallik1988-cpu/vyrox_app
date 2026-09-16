@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-
 import '../../core/auth/auth_controller.dart';
 import '../../core/config/vyrox_config.dart';
-import '../../core/theme/vyrox_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -47,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final pass = password.text;
 
     if (mail.isEmpty || !mail.contains('@')) {
-      setState(() => error = 'Type a real email address.');
+      setState(() => error = 'Type a valid email address.');
       return;
     }
     if (pass.length < 6) {
@@ -62,11 +59,10 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       await action();
       if (AuthController.signedIn) {
-        if (mounted) context.pop(true);
+        if (mounted) Navigator.pop(context, true); // Safe pop!
       } else {
         setState(() {
-          error =
-              'Account created, but Confirm email is still ON in Supabase. Turn it OFF, then Sign in.';
+          error = 'Account created, but Confirm email is still ON in Supabase. Turn it OFF, then Sign in.';
         });
       }
     } catch (e) {
@@ -79,112 +75,120 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: VyroxColors.bg,
-      appBar: AppBar(title: const Text('Sign in')),
+      backgroundColor: const Color(0xFF0F0C17),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Account', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         children: [
           const Text(
-            'VYROX account',
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800),
+            'VYROX AI',
+            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -1),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Type email + password, then Create free account.',
-            style: TextStyle(color: Color(0xFFB9B9C6)),
+            'Sign in or create a free account to sync credits and creations.',
+            style: TextStyle(color: Color(0xFFA1A1AA), fontSize: 15),
           ),
           if (!VyroxConfig.isConfigured) ...[
             const SizedBox(height: 16),
-            const Text(
-              'Add Project URL and anon key in vyrox_config.dart first.',
-              style: TextStyle(color: Colors.orangeAccent),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+              child: const Text(
+                'Supabase keys missing in vyrox_config.dart',
+                style: TextStyle(color: Colors.orangeAccent, fontSize: 13),
+              ),
             ),
           ],
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
           TextField(
             controller: email,
             keyboardType: TextInputType.emailAddress,
-            autofillHints: const [AutofillHints.email],
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               labelText: 'Email',
+              labelStyle: const TextStyle(color: Colors.white60),
               filled: true,
-              fillColor: VyroxColors.card,
+              fillColor: const Color(0xFF181228),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           TextField(
             controller: password,
             obscureText: true,
-            autofillHints: const [AutofillHints.newPassword],
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               labelText: 'Password (6+ characters)',
+              labelStyle: const TextStyle(color: Colors.white60),
               filled: true,
-              fillColor: VyroxColors.card,
+              fillColor: const Color(0xFF181228),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.white.withOpacity(0.08)),
               ),
             ),
           ),
           if (error != null) ...[
-            const SizedBox(height: 12),
-            Text(error!, style: const TextStyle(color: Colors.redAccent)),
+            const SizedBox(height: 14),
+            Text(error!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
           ],
-          const SizedBox(height: 24),
-          OutlinedButton(
-            onPressed: busy || !VyroxConfig.isConfigured
-                ? null
-                : () => _run(() async {
-                      await AuthController.signUp(
-                        email.text.trim(),
-                        password.text,
-                      );
-                      if (!AuthController.signedIn) {
-                        await AuthController.signIn(
-                          email.text.trim(),
-                          password.text,
-                        );
-                      }
-                    }),
-            child: const Text('Create free account'),
-          ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 28),
           SizedBox(
-            height: 56,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7C5CFF), Color(0xFFD6FF4A)],
-                ),
+            height: 54,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7B4FCE),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                elevation: 0,
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: busy || !VyroxConfig.isConfigured
-                      ? null
-                      : () => _run(() async {
-                            await AuthController.signIn(
-                              email.text.trim(),
-                              password.text,
-                            );
-                          }),
-                  borderRadius: BorderRadius.circular(18),
-                  child: Center(
-                    child: Text(
-                      busy ? 'Please wait…' : 'Sign in',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
+              onPressed: busy || !VyroxConfig.isConfigured
+                  ? null
+                  : () => _run(() async {
+                        await AuthController.signIn(email.text.trim(), password.text);
+                      }),
+              child: Text(
+                busy ? 'Please wait…' : 'Sign In',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 54,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              ),
+              onPressed: busy || !VyroxConfig.isConfigured
+                  ? null
+                  : () => _run(() async {
+                        await AuthController.signUp(email.text.trim(), password.text);
+                        if (!AuthController.signedIn) {
+                          await AuthController.signIn(email.text.trim(), password.text);
+                        }
+                      }),
+              child: const Text(
+                'Create Free Account',
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
               ),
             ),
           ),
