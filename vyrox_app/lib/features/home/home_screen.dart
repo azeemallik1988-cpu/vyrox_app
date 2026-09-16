@@ -28,8 +28,8 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const Text('VYROX AI', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -4, height: 1)),
-              const Text('STUDIO', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -4, height: 1)),
+              const Text('VYROX AI', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -2, height: 1)),
+              const Text('STUDIO', style: TextStyle(fontSize:28, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -2, height: 1)),
               const SizedBox(height: 24),
               GridView.builder(
                 shrinkWrap: true,
