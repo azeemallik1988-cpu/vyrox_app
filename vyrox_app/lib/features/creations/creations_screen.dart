@@ -44,7 +44,7 @@ class CreationsScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B4FCE), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)), elevation: 0),
-                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: CreationType.image))),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateToolScreen(tool: CreationType 'Image' ))),
                 child: const Text('Go to Create', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
