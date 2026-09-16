@@ -5,7 +5,6 @@ import '../creations/creations_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,11 +21,7 @@ class ProfileScreen extends StatelessWidget {
                   color: Colors.transparent,
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(color: Colors.white.withOpacity(0.1)),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF2D1B4E).withOpacity(0.5), Color(0xFF0D0A14).withOpacity(0.95)],
-                  ),
+                  gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF2D1B4E).withOpacity(0.5), Color(0xFF0D0A14).withOpacity(0.95)]),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +129,6 @@ class _MenuRow extends StatelessWidget {
   final String title;
   final VoidCallback? onTap;
   const _MenuRow({required this.title, this.onTap, Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
