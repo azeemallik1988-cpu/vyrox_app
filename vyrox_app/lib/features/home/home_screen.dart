@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../creations/creations_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -25,44 +26,21 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
-              const Text(
-                'VYROX AI',
-                style: TextStyle(
-                  fontSize: 34, fontWeight: FontWeight.bold,
-                  color: Colors.white, letterSpacing: -4, height: 1,
-                ),
-              ),
-              const Text(
-                'STUDIO',
-                style: TextStyle(
-                  fontSize: 34, fontWeight: FontWeight.bold,
-                  color: Color(0xFFC8F560), letterSpacing: -4, height: 1,
-                ),
-              ),
+              const Text('VYROX AI', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -4, height: 1)),
+              const Text('STUDIO', style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Color(0xFFC8F560), letterSpacing: -4, height: 1)),
               const SizedBox(height: 24),
 
-              // 8-tool grid
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.1,
+                  crossAxisCount: 3, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.1,
                 ),
                 itemCount: tools.length,
                 itemBuilder: (context, i) {
                   final t = tools[i];
                   return GestureDetector(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${t['label']} — open Create'),
-                          duration: const Duration(seconds: 1),
-                        ),
-                      );
-                    },
+                    onTap: () {},
                     child: Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFF181228),
@@ -75,32 +53,27 @@ class HomeScreen extends StatelessWidget {
                           Stack(
                             alignment: Alignment.topRight,
                             children: [
-                              Icon(t['icon'] as IconData, size: 30, color: Colors.white),
+                              Icon(t['icon'] as IconData, size: 28, color: Colors.white),
                               Positioned(
-                                top: 0,
-                                right: 0,
+                                top: 2, right: 2,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                                   decoration: BoxDecoration(
                                     color: t['c'] as Color,
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     t['badge'] as String,
-                                    style: const TextStyle(
-                                      fontSize: 9, fontWeight: FontWeight.bold, color: Colors.white,
-                                    ),
+                                    style: const TextStyle(fontSize: 7, fontWeight: FontWeight.bold, color: Colors.white),
                                   ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 6),
                           Text(
                             t['label'] as String,
-                            style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white,
-                            ),
+                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white),
                           ),
                         ],
                       ),
@@ -111,18 +84,13 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 32),
 
-              // Discover
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, '/explore'),
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)],
-                    ),
+                    gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF5D3A9B), Color(0xFF2A1545)]),
                     border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
                   child: Row(
@@ -131,17 +99,9 @@ class HomeScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: const [
-                            Text(
-                              'Discover',
-                              style: TextStyle(
-                                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white,
-                              ),
-                            ),
+                            Text('Discover', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
                             SizedBox(height: 4),
-                            Text(
-                              'Community prompts & trending tools',
-                              style: TextStyle(fontSize: 13, color: Colors.white70),
-                            ),
+                            Text('Community prompts & trending tools', style: TextStyle(fontSize: 13, color: Colors.white70)),
                           ],
                         ),
                       ),
@@ -151,7 +111,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -164,17 +124,11 @@ class HomeScreen extends StatelessWidget {
         currentIndex: 0,
         onTap: (i) {
           if (i == 1) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const Scaffold(
-              backgroundColor: Color(0xFF0F0C17),
-              body: Center(child: Text('Create Screen', style: TextStyle(color: Colors.white, fontSize: 24))),
-            )));
+            // Create tab — opens Create screen when you build it
           } else if (i == 2) {
             Navigator.pushNamed(context, '/explore');
           } else if (i == 3) {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const Scaffold(
-              backgroundColor: Color(0xFF0F0C17),
-              body: Center(child: Text('Creations Screen', style: TextStyle(color: Colors.white, fontSize: 24))),
-            )));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const CreationsScreen()));
           } else if (i == 4) {
             Navigator.pushNamed(context, '/profile');
           }
