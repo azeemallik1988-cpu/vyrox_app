@@ -34,9 +34,9 @@ class ProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('lik1988', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -2)),
+                          const Text('lik1988', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: -2)),
                           const SizedBox(height: 2),
-                          const Text('@gmail.com', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: -1)),
+                          const Text('@gmail.com', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white70, letterSpacing: -1)),
                           const SizedBox(height: 8),
                           Row(
                             children: [
