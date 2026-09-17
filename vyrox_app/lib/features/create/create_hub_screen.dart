@@ -27,7 +27,7 @@ class CreateHubScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: const Text('Create', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
-      
+      body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
