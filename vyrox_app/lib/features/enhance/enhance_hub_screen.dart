@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'passport_photo_screen.dart';
 import 'face_swap_screen.dart';
+import 'outfit_swap_screen.dart';
 import 'ai_transform_screen.dart';
 
 class EnhanceHubScreen extends StatelessWidget {
@@ -22,18 +23,18 @@ class EnhanceHubScreen extends StatelessWidget {
       'route': 'faceswap',
     },
     {
+      'icon': Icons.checkroom,
+      'label': 'Change Outfit',
+      'sub': 'Virtual try-on · needs free key',
+      'color': Color(0xFF3B82F6),
+      'route': 'outfit',
+    },
+    {
       'icon': Icons.wallpaper,
       'label': 'Change Background',
       'sub': 'AI scene · beta',
       'color': Color(0xFF7B4FCE),
       'route': 'background',
-    },
-    {
-      'icon': Icons.checkroom,
-      'label': 'Change Outfit',
-      'sub': 'AI restyle · beta',
-      'color': Color(0xFF3B82F6),
-      'route': 'outfit',
     },
     {
       'icon': Icons.zoom_in,
@@ -67,7 +68,6 @@ class EnhanceHubScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hero banner
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -106,23 +106,16 @@ class EnhanceHubScreen extends StatelessWidget {
                     child: GestureDetector(
                       onTap: () {
                         if (t['route'] == 'passport') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const PassportPhotoScreen()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const PassportPhotoScreen()));
                         } else if (t['route'] == 'faceswap') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const FaceSwapScreen()),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const FaceSwapScreen()));
+                        } else if (t['route'] == 'outfit') {
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => const OutfitSwapScreen()));
                         } else {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => AITransformScreen(
-                                mode: t['route'] as String,
-                                title: t['label'] as String,
-                              ),
+                              builder: (_) => AITransformScreen(mode: t['route'] as String, title: t['label'] as String),
                             ),
                           );
                         }
