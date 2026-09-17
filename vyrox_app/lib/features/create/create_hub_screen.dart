@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'create_tool_screen.dart';
+import 'typography_screen.dart';
 
 class CreateHubScreen extends StatelessWidget {
   const CreateHubScreen({super.key});
@@ -26,38 +27,74 @@ class CreateHubScreen extends StatelessWidget {
         title: const Text('Create', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Pick a tool to start creating', style: TextStyle(color: Colors.white70, fontSize: 15)),
+            // ⭐ FEATURED: Typography Mode
+            GestureDetector(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TypographyScreen())),
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF7B4FCE), Color(0xFF2D1B4E)],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(color: Color(0xFFC8F560), shape: BoxShape.circle),
+                      child: const Icon(Icons.text_fields, color: Colors.black, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Typography Mode', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                          SizedBox(height: 2),
+                          Text('Posters · Logos · Quotes · T-shirts', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.arrow_forward, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
+            const Text('Standard tools', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
             Expanded(
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, crossAxisSpacing: 14, mainAxisSpacing: 14, childAspectRatio: 1.1,
+                  crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.2,
                 ),
                 itemCount: tools.length,
                 itemBuilder: (context, i) {
                   final t = tools[i];
                   return GestureDetector(
-                    onTap: () {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => CreateToolScreen(tool: t['label'] as String),
-                      ));
-                    },
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => CreateToolScreen(tool: t['label'] as String)),
+                    ),
                     child: Container(
                       decoration: BoxDecoration(
                         color: const Color(0xFF181228),
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(color: Colors.white.withOpacity(0.08)),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(t['icon'] as IconData, size: 34, color: Colors.white),
-                          const SizedBox(height: 10),
-                          Text(t['label'] as String, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.white)),
+                          Icon(t['icon'] as IconData, size: 30, color: Colors.white),
+                          const SizedBox(height: 8),
+                          Text(t['label'] as String, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
                         ],
                       ),
                     ),
