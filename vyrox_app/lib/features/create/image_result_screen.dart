@@ -2,6 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+
 import '../../core/auth/auth_controller.dart';
 import '../../core/engines/ai_engines.dart';
 
@@ -28,6 +32,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   bool _isLoading = true;
   bool _hasError = false;
   bool _savedToDb = false;
+  bool _downloading = false;
   String _statusMessage = 'Preparing...';
   final List<String> _failedEngines = [];
 
@@ -57,7 +62,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   }
 
   Future<void> _runCascade() async {
-    // Block key-locked engines if not configured
     final engineMeta = allEngines.firstWhere((e) => e.id == _preferredEngine);
     if (engineMeta.requiresKey && !engineMeta.isReady) {
       if (mounted) {
@@ -65,7 +69,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
           _hasError = true;
           _isLoading = false;
           _statusMessage =
-              '${engineMeta.label} needs an API key. Add it in ai_engines.dart, or pick a free engine.';
+              '${engineMeta.label} needs an API key. Add it in ai_engines.dart.';
         });
       }
       return;
@@ -102,7 +106,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       );
 
       final ok = await _probe(url);
-
       if (!mounted) return;
 
       if (ok) {
@@ -152,6 +155,82 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     _runCascade();
   }
 
+  // --- FULLSCREEN VIEW ---
+  void _openFullscreen() {
+    if (_imageUrl == null) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _FullscreenImageViewer(imageUrl: _imageUrl!, prompt: widget.prompt),
+      ),
+    );
+  }
+
+  // --- DOWNLOAD TO DEVICE ---
+  Future<void> _downloadImage() async {
+    if (_imageUrl == null || _downloading) return;
+    setState(() => _downloading = true);
+
+    try {
+      final response = await http.get(Uri.parse(_imageUrl!));
+      if (response.statusCode != 200) throw 'Download failed';
+
+      final dir = await getApplicationDocumentsDirectory();
+      final filename = 'vyrox_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File('${dir.path}/$filename');
+      await file.writeAsBytes(response.bodyBytes);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF10B981),
+            content: Text('Saved to: Documents/$filename'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.redAccent,
+            content: Text('Download failed: $e'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
+  // --- SHARE ---
+  Future<void> _shareImage() async {
+    if (_imageUrl == null) return;
+    try {
+      final response = await http.get(Uri.parse(_imageUrl!));
+      if (response.statusCode != 200) throw 'Fetch failed';
+
+      final dir = await getTemporaryDirectory();
+      final filename = 'vyrox_share_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File('${dir.path}/$filename');
+      await file.writeAsBytes(response.bodyBytes);
+
+      await Share.shareXFiles(
+        [XFile(file.path)],
+        text: 'Created with Vyrox AI ✨\n"${widget.prompt}"',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.redAccent,
+            content: Text('Share failed: $e'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -170,10 +249,11 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ⭐ ENGINE PICKER (FIXED OVERFLOW)
             const Text('AI Engine', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             SizedBox(
-              height: 70,
+              height: 78,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: allEngines.length,
@@ -185,8 +265,8 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                   return GestureDetector(
                     onTap: () => _pickEngine(eng.id),
                     child: Container(
-                      width: 100,
-                      padding: const EdgeInsets.all(10),
+                      width: 96,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                       decoration: BoxDecoration(
                         color: selected ? const Color(0xFF7B4FCE).withOpacity(0.2) : const Color(0xFF181228),
                         borderRadius: BorderRadius.circular(14),
@@ -201,16 +281,18 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                         children: [
                           Row(
                             children: [
-                              Icon(eng.icon, size: 16, color: selected ? const Color(0xFFA78BFA) : Colors.white70),
+                              Icon(eng.icon, size: 14, color: selected ? const Color(0xFFA78BFA) : Colors.white70),
                               const Spacer(),
-                              if (locked) const Icon(Icons.lock, size: 12, color: Colors.orangeAccent),
+                              if (locked) const Icon(Icons.lock, size: 10, color: Colors.orangeAccent),
                             ],
                           ),
                           Text(
                             eng.label,
-                            style: TextStyle(
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -218,7 +300,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                             eng.description,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white54, fontSize: 9),
+                            style: const TextStyle(color: Colors.white54, fontSize: 8),
                           ),
                         ],
                       ),
@@ -229,24 +311,94 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
             ),
             const SizedBox(height: 16),
 
-            Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: 320),
-              decoration: BoxDecoration(
-                color: const Color(0xFF181228),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.white.withOpacity(0.06)),
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: _buildImageArea(),
+            // IMAGE AREA (TAP FOR FULLSCREEN)
+            GestureDetector(
+              onTap: _openFullscreen,
+              child: Container(
+                width: double.infinity,
+                constraints: const BoxConstraints(minHeight: 320),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF181228),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.white.withOpacity(0.06)),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    children: [
+                      _buildImageArea(),
+                      if (_imageUrl != null && !_isLoading && !_hasError)
+                        Positioned(
+                          bottom: 12,
+                          right: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.fullscreen, size: 16, color: Colors.white),
+                                SizedBox(width: 4),
+                                Text('Tap to view', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
 
             _buildStatusBar(),
-
             const SizedBox(height: 16),
+
+            // ACTION BUTTONS (Download + Share)
+            if (_imageUrl != null && !_isLoading && !_hasError)
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      onPressed: _downloading ? null : _downloadImage,
+                      icon: _downloading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                            )
+                          : const Icon(Icons.download, size: 20),
+                      label: const Text('Download', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF7B4FCE),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                      ),
+                      onPressed: _shareImage,
+                      icon: const Icon(Icons.share, size: 20),
+                      label: const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            const SizedBox(height: 16),
+
             Row(
               children: [
                 _badge(widget.style, const Color(0xFFA78BFA), const Color(0xFF7B4FCE)),
@@ -316,7 +468,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   }
 
   Widget _loadingWidget() => Container(
-    height: 320,
+    height: 340,
     alignment: Alignment.center,
     padding: const EdgeInsets.all(20),
     child: Column(
@@ -344,7 +496,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   );
 
   Widget _errorWidget() => Container(
-    height: 320,
+    height: 340,
     alignment: Alignment.center,
     padding: const EdgeInsets.all(20),
     child: Column(
@@ -379,6 +531,46 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         const SizedBox(width: 10),
         Expanded(child: Text(msg, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600))),
       ]),
+    );
+  }
+}
+
+// --- FULLSCREEN IMAGE VIEWER ---
+class _FullscreenImageViewer extends StatefulWidget {
+  final String imageUrl;
+  final String prompt;
+  const _FullscreenImageViewer({required this.imageUrl, required this.prompt});
+
+  @override
+  State<_FullscreenImageViewer> createState() => _FullscreenImageViewerState();
+}
+
+class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          minScale: 0.8,
+          maxScale: 5.0,
+          child: Image.network(
+            widget.imageUrl,
+            fit: BoxFit.contain,
+            loadingBuilder: (c, child, p) => p == null
+                ? child
+                : const Center(child: CircularProgressIndicator(color: Colors.white)),
+            errorBuilder: (c, e, s) => const Center(
+              child: Icon(Icons.broken_image, color: Colors.white54, size: 60),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
