@@ -60,7 +60,7 @@ class EnhanceHubScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Enhance', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
-      
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
