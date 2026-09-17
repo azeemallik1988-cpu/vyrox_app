@@ -30,8 +30,8 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
   final List<String> _categories = ['upper_body', 'lower_body', 'dresses'];
   final List<String> _categoryLabels = ['Top / Shirt', 'Pants / Lower', 'Dress / Full'];
 
-  bool get _keyReady => EngineKeys.segmind.isNotEmpty;
-
+   bool get _keyReady => KeyStore.segmind.isNotEmpty;
+  
   Future<File?> _pick() async {
     try {
       final XFile? x = await _picker.pickImage(
