@@ -2,11 +2,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 
-/// Free image-to-image AI helper.
-/// Uploads image to catbox.moe (free, no key), then asks Pollinations Kontext
-/// to transform it based on the user's prompt.
 class AiEnhanceEngine {
-  /// Uploads a local file to catbox.moe and returns a public URL.
+  /// Uploads photo to catbox.moe
   static Future<String?> uploadImage(File file) async {
     try {
       final uri = Uri.parse('https://catbox.moe/user/api.php');
@@ -14,7 +11,7 @@ class AiEnhanceEngine {
         ..fields['reqtype'] = 'fileupload'
         ..files.add(await http.MultipartFile.fromPath('fileToUpload', file.path));
 
-      final streamed = await request.send().timeout(const Duration(seconds: 60));
+      final streamed = await request.send().timeout(const Duration(seconds: 45));
       final response = await http.Response.fromStream(streamed);
 
       if (response.statusCode == 200 && response.body.trim().startsWith('http')) {
@@ -26,7 +23,7 @@ class AiEnhanceEngine {
     }
   }
 
-  /// Builds a Pollinations Kontext URL for image editing.
+  /// Constructs URL for Pollinations AI Image Editing
   static String buildEnhanceUrl({
     required String mode,
     required String referenceUrl,
@@ -40,7 +37,8 @@ class AiEnhanceEngine {
     final seed = Random().nextInt(999999);
 
     return 'https://image.pollinations.ai/prompt/$encodedPrompt'
-        '?image=$encodedRef&model=kontext'
+        '?image=$encodedRef'
+        '&model=flux'
         '&width=$width&height=$height'
         '&nologo=true&seed=$seed';
   }
@@ -50,58 +48,41 @@ class AiEnhanceEngine {
     switch (mode) {
       case 'background':
         return extra.isEmpty
-            ? 'keep the person exactly the same, replace the background with a beautiful cinematic scene, photorealistic'
-            : 'keep the person exactly the same, replace the background with: $extra, photorealistic, professional lighting';
+            ? 'keep subject identical, place on cinematic photorealistic background, 8k portrait'
+            : 'keep subject identical, change background to $extra, high quality studio photography';
       case 'faceswap':
-        return extra.isEmpty
-            ? 'photorealistic portrait, subtle face enhancement, preserve original pose and lighting'
-            : 'photorealistic portrait, make the person look like: $extra, preserve pose and lighting, natural look';
+        return 'portrait photo, masterfully blend face, photorealistic, natural skin tone, crystal clear';
       case 'outfit':
         return extra.isEmpty
-            ? 'keep face and pose identical, change outfit to an elegant modern style, photorealistic'
-            : 'keep face and pose identical, change outfit to: $extra, photorealistic';
+            ? 'keep face identical, change clothing to elegant formal suit, high quality fashion photo'
+            : 'keep face identical, change clothing to $extra, fashion photoshoot';
       case 'upscale':
-        return 'upscale this image, enhance every detail, sharp 4K quality, high resolution, crystal clear, remove blur';
+        return 'super resolution 4k portrait, ultra sharp focus, crystal clear detail';
       case 'removebg':
-        return 'remove the background completely, keep only the subject, clean sharp edges, plain white background, studio cutout';
+        return 'subject cutout on clean solid white background, high contrast studio portrait';
       default:
-        return extra.isEmpty ? 'enhance this image, photorealistic, high quality' : extra;
+        return extra.isEmpty ? 'photorealistic enhancement, high quality portrait' : extra;
     }
   }
 
-  /// Friendly display name for a mode.
   static String titleFor(String mode) {
     switch (mode) {
-      case 'background':
-        return 'Change Background';
-      case 'faceswap':
-        return 'Change Face';
-      case 'outfit':
-        return 'Change Outfit';
-      case 'upscale':
-        return 'Upscale HD';
-      case 'removebg':
-        return 'Remove Background';
-      default:
-        return 'AI Enhance';
+      case 'background': return 'Change Background';
+      case 'faceswap': return 'Face Swap';
+      case 'outfit': return 'Change Outfit';
+      case 'upscale': return 'Upscale HD';
+      case 'removebg': return 'Remove Background';
+      default: return 'AI Edit';
     }
   }
 
-  /// Placeholder hint for the prompt field.
   static String hintFor(String mode) {
     switch (mode) {
-      case 'background':
-        return 'Describe the new background (e.g. "sunset beach")';
-      case 'faceswap':
-        return 'Describe the new face (e.g. "older man with beard")';
-      case 'outfit':
-        return 'Describe the new outfit (e.g. "black business suit")';
-      case 'upscale':
-        return 'Optional (leave empty for auto AI upscaling)';
-      case 'removebg':
-        return 'Optional (leave empty for transparent-style cutout)';
-      default:
-        return 'Describe what you want';
+      case 'background': return 'e.g. "sunset beach with palm trees"';
+      case 'outfit': return 'e.g. "black leather jacket and jeans"';
+      case 'upscale': return 'Optional description for upscale...';
+      case 'removebg': return 'Optional description...';
+      default: return 'Describe your edit...';
     }
   }
 }
