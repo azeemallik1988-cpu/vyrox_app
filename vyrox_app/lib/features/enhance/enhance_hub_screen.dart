@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'passport_photo_screen.dart';
+import 'face_swap_screen.dart';
 import 'ai_transform_screen.dart';
 
 class EnhanceHubScreen extends StatelessWidget {
@@ -14,23 +15,23 @@ class EnhanceHubScreen extends StatelessWidget {
       'route': 'passport',
     },
     {
-      'icon': Icons.wallpaper,
-      'label': 'Change Background',
-      'sub': 'AI picks any scene',
-      'color': Color(0xFF7B4FCE),
-      'route': 'background',
-    },
-    {
       'icon': Icons.face_retouching_natural,
       'label': 'Face Swap',
-      'sub': 'Swap two faces',
+      'sub': 'Swap face onto target body',
       'color': Color(0xFFF59E0B),
       'route': 'faceswap',
     },
     {
+      'icon': Icons.wallpaper,
+      'label': 'Change Background',
+      'sub': 'AI replaces any scene',
+      'color': Color(0xFF7B4FCE),
+      'route': 'background',
+    },
+    {
       'icon': Icons.checkroom,
       'label': 'Change Outfit',
-      'sub': 'AI restyles your look',
+      'sub': 'AI restyles clothes',
       'color': Color(0xFF3B82F6),
       'route': 'outfit',
     },
@@ -66,7 +67,6 @@ class EnhanceHubScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hero banner
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -90,7 +90,7 @@ class EnhanceHubScreen extends StatelessWidget {
                         children: [
                           Text('AI Photo Enhance', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                           SizedBox(height: 4),
-                          Text('Transform any photo with AI power', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                          Text('Transform photos with free AI tools', style: TextStyle(color: Colors.white70, fontSize: 13)),
                         ],
                       ),
                     ),
@@ -108,6 +108,11 @@ class EnhanceHubScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const PassportPhotoScreen()),
+                          );
+                        } else if (t['route'] == 'faceswap') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const FaceSwapScreen()),
                           );
                         } else {
                           Navigator.push(
