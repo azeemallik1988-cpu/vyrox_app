@@ -48,9 +48,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   Future<void> _saveProject() async {
     try {
       await AuthController.saveProject(
-        title: widget.prompt.length > 40
-            ? '${widget.prompt.substring(0, 40)}...'
-            : widget.prompt,
+        title: widget.prompt.length > 40 ? '${widget.prompt.substring(0, 40)}...' : widget.prompt,
         kind: 'image',
       );
       if (mounted) setState(() => _savedToDb = true);
@@ -63,6 +61,30 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     return (1024, 1024);
   }
 
+  /// Rich, distinct style recipes so each style looks truly different.
+  String _styleRecipe(String base, String style) {
+    switch (style.toLowerCase()) {
+      case 'cinematic':
+        return '$base, cinematic film still, dramatic movie lighting, shallow depth of field, '
+            'anamorphic lens flare, moody color grading, teal and orange tones, '
+            'shot on ARRI Alexa, 35mm film, professional cinematography, epic composition, 8k';
+      case 'realistic':
+        return '$base, ultra photorealistic, DSLR photograph, natural lighting, '
+            'lifelike skin texture, sharp focus, high detail, shot on Canon EOS R5, '
+            '85mm lens, realistic shadows, true-to-life colors, professional photography, 8k';
+      case 'anime':
+        return '$base, anime style, Studio Ghibli inspired, vibrant cel-shaded illustration, '
+            'clean line art, expressive big eyes, colorful, Japanese animation, '
+            'manga art style, detailed anime background, trending on pixiv, 4k';
+      case 'noir':
+        return '$base, film noir style, high contrast black and white, dramatic chiaroscuro lighting, '
+            'deep shadows, moody atmosphere, 1940s detective aesthetic, '
+            'monochrome, smoky ambiance, vintage cinematic, grainy film';
+      default:
+        return '$base, $style style, ultra detailed, high quality, 8k';
+    }
+  }
+
   Future<void> _runCascade() async {
     final engineMeta = allEngines.firstWhere((e) => e.id == _preferredEngine);
     if (engineMeta.requiresKey && !engineMeta.isReady) {
@@ -70,7 +92,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         setState(() {
           _hasError = true;
           _isLoading = false;
-          _statusMessage = '${engineMeta.label} needs an API key. Add it in ai_engines.dart.';
+          _statusMessage = '${engineMeta.label} needs an API key.';
         });
       }
       return;
@@ -94,10 +116,8 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
 
       final engineId = cascade[i];
       final (w, h) = _dimensions();
-      // NEW seed per engine so cache doesn't collide
       final seed = _random.nextInt(9999999);
-      final enhanced =
-          '${widget.prompt}, ${widget.style} style, ultra detailed, high quality, 8k';
+      final enhanced = _styleRecipe(widget.prompt, widget.style);
 
       final url = buildPollinationsUrl(
         engineId: engineId,
@@ -113,7 +133,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       });
 
       final ok = await _waitForImage(url, const Duration(seconds: 60));
-
       if (!mounted || myAttempt != _attemptId) return;
 
       if (ok) {
@@ -125,7 +144,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         return;
       } else {
         setState(() => _failedEngines.add(engineId.toUpperCase()));
-        // Clear cache so retry is fresh
         try {
           await NetworkImage(url).evict();
         } catch (_) {}
@@ -137,13 +155,11 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       setState(() {
         _hasError = true;
         _isLoading = false;
-        _statusMessage = 'All engines failed. Retry in 30 seconds.';
+        _statusMessage = 'All engines failed. Retry in 30s.';
       });
     }
   }
 
-  /// Wait for the image widget to fully load using ImageStream.
-  /// This is much more reliable than HTTP GET probing.
   Future<bool> _waitForImage(String url, Duration timeout) async {
     final completer = Completer<bool>();
     final provider = NetworkImage(url);
@@ -165,13 +181,10 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     );
     stream.addListener(listener);
 
-    return completer.future.timeout(
-      timeout,
-      onTimeout: () {
-        finish(false);
-        return false;
-      },
-    );
+    return completer.future.timeout(timeout, onTimeout: () {
+      finish(false);
+      return false;
+    });
   }
 
   void _pickEngine(String id) {
@@ -202,11 +215,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       await file.writeAsBytes(response.bodyBytes);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: const Color(0xFF10B981),
-            content: Text('Saved: Documents/$filename'),
-            duration: const Duration(seconds: 4),
-          ),
+          SnackBar(backgroundColor: const Color(0xFF10B981), content: Text('Saved: Documents/$filename'), duration: const Duration(seconds: 4)),
         );
       }
     } catch (e) {
@@ -229,10 +238,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       final filename = 'vyrox_share_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File('${dir.path}/$filename');
       await file.writeAsBytes(response.bodyBytes);
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Created with Vyrox AI ✨\n"${widget.prompt}"',
-      );
+      await Share.shareXFiles([XFile(file.path)], text: 'Created with Vyrox AI ✨\n"${widget.prompt}"');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -251,9 +257,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Result', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: _runCascade),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: _runCascade)],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -280,10 +284,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                       decoration: BoxDecoration(
                         color: selected ? const Color(0xFF7B4FCE).withOpacity(0.2) : const Color(0xFF181228),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: selected ? const Color(0xFF7B4FCE) : Colors.white.withOpacity(0.08),
-                          width: selected ? 1.5 : 1,
-                        ),
+                        border: Border.all(color: selected ? const Color(0xFF7B4FCE) : Colors.white.withOpacity(0.08), width: selected ? 1.5 : 1),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,10 +295,8 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                             const Spacer(),
                             if (locked) const Icon(Icons.lock, size: 10, color: Colors.orangeAccent),
                           ]),
-                          Text(eng.label, maxLines: 1, overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                          Text(eng.description, maxLines: 1, overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white54, fontSize: 8)),
+                          Text(eng.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                          Text(eng.description, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white54, fontSize: 8)),
                         ],
                       ),
                     ),
@@ -306,8 +305,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // IMAGE AREA
             GestureDetector(
               onTap: _openFullscreen,
               child: Container(
@@ -329,10 +326,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                           bottom: 12, right: 12,
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.6),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                            decoration: BoxDecoration(color: Colors.black.withOpacity(0.6), borderRadius: BorderRadius.circular(20)),
                             child: const Row(mainAxisSize: MainAxisSize.min, children: [
                               Icon(Icons.fullscreen, size: 16, color: Colors.white),
                               SizedBox(width: 4),
@@ -346,10 +340,8 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
             _buildStatusBar(),
             const SizedBox(height: 16),
-
             if (_imageUrl != null && !_isLoading && !_hasError)
               Row(children: [
                 Expanded(
@@ -361,9 +353,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: _downloading ? null : _downloadImage,
-                    icon: _downloading
-                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Icon(Icons.download, size: 20),
+                    icon: _downloading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.download, size: 20),
                     label: const Text('Download', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
@@ -384,7 +374,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                 ),
               ]),
             const SizedBox(height: 16),
-
             Row(children: [
               _badge(widget.style, const Color(0xFFA78BFA), const Color(0xFF7B4FCE)),
               const SizedBox(width: 8),
@@ -429,10 +418,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   Widget _badge(String text, Color textColor, Color borderColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: borderColor.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: BoxDecoration(color: borderColor.withOpacity(0.15), borderRadius: BorderRadius.circular(8)),
       child: Text(text, style: TextStyle(color: textColor, fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
@@ -440,35 +426,17 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   Widget _buildImageArea() {
     if (_hasError) return _errorWidget();
     if (_imageUrl == null) return _loadingWidget();
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.network(
-          _imageUrl!,
-          key: ValueKey(_imageUrl),
-          fit: BoxFit.cover,
-          // If loading, show spinner
-          loadingBuilder: (c, child, p) {
-            if (p == null) return child;
-            return _loadingWidget();
-          },
-          // If error after we thought it was OK, retry cascade
-          errorBuilder: (c, e, s) {
-            if (!_hasError && !_isLoading) {
-              WidgetsBinding.instance.addPostFrameCallback((_) => _runCascade());
-            }
-            return _loadingWidget();
-          },
-        ),
-        // If done, we already show image
-        if (_successEngine != null && !_isLoading)
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Container(color: Colors.transparent),
-            ),
-          ),
-      ],
+    return Image.network(
+      _imageUrl!,
+      key: ValueKey(_imageUrl),
+      fit: BoxFit.cover,
+      loadingBuilder: (c, child, p) => p == null ? child : _loadingWidget(),
+      errorBuilder: (c, e, s) {
+        if (!_hasError && !_isLoading) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _runCascade());
+        }
+        return _loadingWidget();
+      },
     );
   }
 
@@ -480,8 +448,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       children: [
         const CircularProgressIndicator(color: Color(0xFF7B4FCE)),
         const SizedBox(height: 20),
-        Text(_statusMessage, textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
+        Text(_statusMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         const Text('Free engines may take 10-60s', style: TextStyle(color: Colors.white38, fontSize: 12)),
         if (_failedEngines.isNotEmpty) ...[
@@ -507,13 +474,9 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       children: [
         const Icon(Icons.cloud_off, color: Colors.redAccent, size: 48),
         const SizedBox(height: 12),
-        Text(_statusMessage, textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+        Text(_statusMessage, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        TextButton(
-          onPressed: _runCascade,
-          child: const Text('Retry All Engines', style: TextStyle(color: Color(0xFFA78BFA), fontWeight: FontWeight.bold)),
-        ),
+        TextButton(onPressed: _runCascade, child: const Text('Retry All Engines', style: TextStyle(color: Color(0xFFA78BFA), fontWeight: FontWeight.bold))),
       ],
     ),
   );
@@ -522,16 +485,10 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     final loading = _isLoading;
     final color = _hasError ? Colors.redAccent : (loading ? const Color(0xFFA78BFA) : const Color(0xFF10B981));
     final icon = _hasError ? Icons.error_outline : (loading ? Icons.hourglass_top : Icons.check_circle);
-    final msg = _hasError
-        ? _statusMessage
-        : (loading ? _statusMessage : 'Generated with $_successEngine');
+    final msg = _hasError ? _statusMessage : (loading ? _statusMessage : 'Generated with $_successEngine · ${widget.style}');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
+      decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(12), border: Border.all(color: color.withOpacity(0.3))),
       child: Row(children: [
         Icon(icon, color: color, size: 16),
         const SizedBox(width: 10),
@@ -555,11 +512,7 @@ class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, iconTheme: const IconThemeData(color: Colors.white)),
       body: Center(
         child: InteractiveViewer(
           minScale: 0.8,
@@ -567,12 +520,8 @@ class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
           child: Image.network(
             widget.imageUrl,
             fit: BoxFit.contain,
-            loadingBuilder: (c, child, p) => p == null
-                ? child
-                : const Center(child: CircularProgressIndicator(color: Colors.white)),
-            errorBuilder: (c, e, s) => const Center(
-              child: Icon(Icons.broken_image, color: Colors.white54, size: 60),
-            ),
+            loadingBuilder: (c, child, p) => p == null ? child : const Center(child: CircularProgressIndicator(color: Colors.white)),
+            errorBuilder: (c, e, s) => const Center(child: Icon(Icons.broken_image, color: Colors.white54, size: 60)),
           ),
         ),
       ),
