@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -34,6 +33,12 @@ class _AITransformScreenState extends State<AITransformScreen> {
   final TextEditingController _promptController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
+  bool get _isBeta =>
+      widget.mode == 'background' ||
+      widget.mode == 'outfit' ||
+      widget.mode == 'faceswap' ||
+      widget.mode == 'upscale';
+
   @override
   void dispose() {
     _promptController.dispose();
@@ -49,7 +54,6 @@ class _AITransformScreenState extends State<AITransformScreen> {
         imageQuality: 88,
       );
       if (picked == null) return;
-
       setState(() {
         _pickedImage = File(picked.path);
         _uploadedUrl = null;
@@ -71,16 +75,13 @@ class _AITransformScreenState extends State<AITransformScreen> {
     });
 
     final url = await AiEnhanceEngine.uploadImage(_pickedImage!);
-
     if (!mounted) return false;
-
     setState(() => _uploading = false);
 
     if (url == null) {
       setState(() => _error = 'Upload failed. Check internet and try again.');
       return false;
     }
-
     _uploadedUrl = url;
     return true;
   }
@@ -94,66 +95,18 @@ class _AITransformScreenState extends State<AITransformScreen> {
     final ok = await _ensureUploaded();
     if (!ok) return;
 
-    setState(() {
-      _generating = true;
-      _error = null;
-      _resultUrl = null;
-    });
-
+    // No probe. Just set the URL and let Image.network load it.
     final url = AiEnhanceEngine.buildEnhanceUrl(
       mode: widget.mode,
       referenceUrl: _uploadedUrl!,
       userPrompt: _promptController.text,
     );
 
-    // Wait until the image actually loads (60s timeout)
-    final loaded = await _waitForImage(url, const Duration(seconds: 60));
-
-    if (!mounted) return;
-
-    if (loaded) {
-      setState(() {
-        _resultUrl = url;
-        _generating = false;
-      });
-    } else {
-      setState(() {
-        _error = 'Engine is busy. Wait 20s and try again.';
-        _generating = false;
-      });
-    }
-  }
-
-  /// Waits for a NetworkImage URL to fully resolve (or timeout).
-  /// Returns true if it loaded successfully, false otherwise.
-  Future<bool> _waitForImage(String url, Duration timeout) async {
-    final completer = Completer<bool>();
-    final provider = NetworkImage(url);
-    final stream = provider.resolve(ImageConfiguration.empty);
-
-    late ImageStreamListener listener;
-    bool done = false;
-
-    void finish(bool ok) {
-      if (done) return;
-      done = true;
-      stream.removeListener(listener);
-      if (!completer.isCompleted) completer.complete(ok);
-    }
-
-    listener = ImageStreamListener(
-      (info, sync) => finish(true),
-      onError: (error, stack) => finish(false),
-    );
-    stream.addListener(listener);
-
-    return completer.future.timeout(
-      timeout,
-      onTimeout: () {
-        finish(false);
-        return false;
-      },
-    );
+    setState(() {
+      _resultUrl = url;
+      _generating = false;
+      _error = null;
+    });
   }
 
   Future<void> _download() async {
@@ -195,10 +148,7 @@ class _AITransformScreenState extends State<AITransformScreen> {
       final filename = 'vyrox_${widget.mode}_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File('${dir.path}/$filename');
       await file.writeAsBytes(response.bodyBytes);
-      await Share.shareXFiles(
-        [XFile(file.path)],
-        text: 'Enhanced with Vyrox AI ✨',
-      );
+      await Share.shareXFiles([XFile(file.path)], text: 'Enhanced with Vyrox AI ✨');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -223,7 +173,29 @@ class _AITransformScreenState extends State<AITransformScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // SOURCE / RESULT IMAGE CARD
+            // BETA warning banner
+            if (_isBeta)
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.orangeAccent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.orangeAccent.withOpacity(0.3)),
+                ),
+                child: const Row(children: [
+                  Icon(Icons.science, color: Colors.orangeAccent, size: 18),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Beta: free AI may not always keep your exact face. Results vary.',
+                      style: TextStyle(color: Colors.orangeAccent, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ]),
+              ),
+
+            // IMAGE CARD
             GestureDetector(
               onTap: _pickedImage == null ? _pickImage : null,
               child: Container(
@@ -242,7 +214,6 @@ class _AITransformScreenState extends State<AITransformScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Change photo button
             if (_pickedImage != null)
               SizedBox(
                 width: double.infinity,
@@ -260,11 +231,7 @@ class _AITransformScreenState extends State<AITransformScreen> {
               ),
             const SizedBox(height: 20),
 
-            // PROMPT FIELD
-            Text(
-              AiEnhanceEngine.titleFor(widget.mode),
-              style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
-            ),
+            Text(widget.title, style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(16),
@@ -286,17 +253,13 @@ class _AITransformScreenState extends State<AITransformScreen> {
             ),
             const SizedBox(height: 16),
 
-            // STATUS / ERROR
             if (_uploading)
-              _statusBox(icon: Icons.cloud_upload, color: const Color(0xFFA78BFA), text: 'Uploading photo to AI...')
-            else if (_generating)
-              _statusBox(icon: Icons.auto_awesome, color: const Color(0xFF7B4FCE), text: 'Generating your edit...')
+              _statusBox(icon: Icons.cloud_upload, color: const Color(0xFFA78BFA), text: 'Uploading photo...')
             else if (_error != null)
               _statusBox(icon: Icons.error_outline, color: Colors.redAccent, text: _error!),
 
             const SizedBox(height: 16),
 
-            // GENERATE BUTTON
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -307,19 +270,18 @@ class _AITransformScreenState extends State<AITransformScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                   elevation: 0,
                 ),
-                onPressed: (_uploading || _generating || _pickedImage == null) ? null : _generate,
-                icon: _uploading || _generating
+                onPressed: (_uploading || _pickedImage == null) ? null : _generate,
+                icon: _uploading
                     ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                     : const Icon(Icons.auto_awesome),
                 label: Text(
-                  _pickedImage == null ? 'Pick a photo first' : 'Generate ${widget.title}',
+                  _pickedImage == null ? 'Pick a photo first' : 'Generate',
                   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
 
-            // RESULT ACTIONS
-            if (_resultUrl != null && !_generating) ...[
+            if (_resultUrl != null) ...[
               const SizedBox(height: 16),
               Row(children: [
                 Expanded(
@@ -361,21 +323,18 @@ class _AITransformScreenState extends State<AITransformScreen> {
   }
 
   Widget _buildPreview() {
-    if (_resultUrl != null && !_generating) {
+    if (_resultUrl != null) {
       return Image.network(
         _resultUrl!,
+        key: ValueKey(_resultUrl),
         fit: BoxFit.cover,
-        loadingBuilder: (c, child, p) => p == null ? child : _loadingPreview('Loading result...'),
-        errorBuilder: (c, e, s) => _loadingPreview('Result failed to load'),
+        loadingBuilder: (c, child, p) => p == null ? child : _loadingPreview('Generating with AI...'),
+        errorBuilder: (c, e, s) => _retryPreview(),
       );
     }
-
-    if (_generating) return _loadingPreview('Generating with AI...');
-
     if (_pickedImage != null) {
       return Image.file(_pickedImage!, fit: BoxFit.cover);
     }
-
     return Container(
       alignment: Alignment.center,
       child: Column(
@@ -402,6 +361,25 @@ class _AITransformScreenState extends State<AITransformScreen> {
           Text(text, style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
           const SizedBox(height: 6),
           const Text('Free AI · 15-60 seconds', style: TextStyle(color: Colors.white38, fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _retryPreview() {
+    return Container(
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.cloud_off, color: Colors.redAccent, size: 40),
+          const SizedBox(height: 12),
+          const Text('Engine busy. Tap Generate again.', style: TextStyle(color: Colors.white70, fontSize: 13)),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: _generate,
+            child: const Text('Retry', style: TextStyle(color: Color(0xFFA78BFA), fontWeight: FontWeight.bold)),
+          ),
         ],
       ),
     );
