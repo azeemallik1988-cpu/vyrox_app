@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 /// Cloudflare: https://dash.cloudflare.com (10k neurons/day free)
 class EngineKeys {
   static const String gemini = '';
-  static const String cloudflareAccount = '';   // Account ID
-  static const String cloudflareToken = '';     // API Token
+  static const String cloudflareAccount = '';
+  static const String cloudflareToken = '';
 }
 
 class AiEngine {
@@ -30,8 +30,8 @@ class AiEngine {
 final List<AiEngine> allEngines = [
   AiEngine(
     id: 'auto',
-    label: 'Pollinations',
-    description: 'Auto · smart pick',
+    label: 'Auto',
+    description: 'Smart',
     icon: Icons.auto_awesome,
     requiresKey: false,
     isReady: true,
@@ -39,7 +39,7 @@ final List<AiEngine> allEngines = [
   AiEngine(
     id: 'flux',
     label: 'FLUX',
-    description: 'Best quality',
+    description: 'Pro quality',
     icon: Icons.brush,
     requiresKey: false,
     isReady: true,
@@ -55,7 +55,7 @@ final List<AiEngine> allEngines = [
   AiEngine(
     id: 'kontext',
     label: 'Kontext',
-    description: 'Context-aware',
+    description: 'Context',
     icon: Icons.psychology,
     requiresKey: false,
     isReady: true,
@@ -63,15 +63,15 @@ final List<AiEngine> allEngines = [
   AiEngine(
     id: 'gemini',
     label: 'Gemini',
-    description: 'Google · best text',
+    description: 'Google',
     icon: Icons.workspace_premium,
     requiresKey: true,
     isReady: EngineKeys.gemini.isNotEmpty,
   ),
   AiEngine(
     id: 'cloudflare',
-    label: 'Cloudflare',
-    description: 'Workers AI',
+    label: 'Cloud',
+    description: 'CF AI',
     icon: Icons.cloud,
     requiresKey: true,
     isReady: EngineKeys.cloudflareAccount.isNotEmpty &&
@@ -79,7 +79,6 @@ final List<AiEngine> allEngines = [
   ),
 ];
 
-/// Builds a Pollinations URL for the given engine.
 String buildPollinationsUrl({
   required String engineId,
   required String prompt,
@@ -93,7 +92,6 @@ String buildPollinationsUrl({
       '?width=$width&height=$height&nologo=true&seed=$seed$model';
 }
 
-/// Ordered fallback chain: preferred first, then others, skipping key-locked engines.
 List<String> buildCascadeOrder(String preferred) {
   const fallbackOrder = ['flux', 'turbo', 'kontext'];
   final list = <String>[];
