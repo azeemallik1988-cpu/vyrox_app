@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -123,21 +124,36 @@ class _AITransformScreenState extends State<AITransformScreen> {
     }
   }
 
+  /// Waits for a NetworkImage URL to fully resolve (or timeout).
+  /// Returns true if it loaded successfully, false otherwise.
   Future<bool> _waitForImage(String url, Duration timeout) async {
+    final completer = Completer<bool>();
     final provider = NetworkImage(url);
     final stream = provider.resolve(ImageConfiguration.empty);
 
-    return Future<bool>((() async {
-      try {
-        await stream.addListener(ImageStreamListener(
-          (info, sync) {},
-          onError: (e, s) => throw e,
-        )).timeout(timeout);
-        return true;
-      } catch (_) {
+    late ImageStreamListener listener;
+    bool done = false;
+
+    void finish(bool ok) {
+      if (done) return;
+      done = true;
+      stream.removeListener(listener);
+      if (!completer.isCompleted) completer.complete(ok);
+    }
+
+    listener = ImageStreamListener(
+      (info, sync) => finish(true),
+      onError: (error, stack) => finish(false),
+    );
+    stream.addListener(listener);
+
+    return completer.future.timeout(
+      timeout,
+      onTimeout: () {
+        finish(false);
         return false;
-      }
-    })());
+      },
+    );
   }
 
   Future<void> _download() async {
