@@ -15,7 +15,7 @@ class AITransformScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
-      
+      body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
