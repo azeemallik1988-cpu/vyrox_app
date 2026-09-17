@@ -10,42 +10,42 @@ class EnhanceHubScreen extends StatelessWidget {
     {
       'icon': Icons.badge,
       'label': 'Passport Photo',
-      'sub': 'ID · Visa · Documents',
+      'sub': 'ID · Visa · print-ready',
       'color': Color(0xFF10B981),
       'route': 'passport',
     },
     {
       'icon': Icons.face_retouching_natural,
       'label': 'Face Swap',
-      'sub': 'Swap face onto target body',
+      'sub': 'Swap faces · needs free key',
       'color': Color(0xFFF59E0B),
       'route': 'faceswap',
     },
     {
       'icon': Icons.wallpaper,
       'label': 'Change Background',
-      'sub': 'AI replaces any scene',
+      'sub': 'AI scene · beta',
       'color': Color(0xFF7B4FCE),
       'route': 'background',
     },
     {
       'icon': Icons.checkroom,
       'label': 'Change Outfit',
-      'sub': 'AI restyles clothes',
+      'sub': 'AI restyle · beta',
       'color': Color(0xFF3B82F6),
       'route': 'outfit',
     },
     {
       'icon': Icons.zoom_in,
       'label': 'Upscale HD',
-      'sub': 'Sharper · higher res',
+      'sub': 'Sharper · beta',
       'color': Color(0xFFA78BFA),
       'route': 'upscale',
     },
     {
       'icon': Icons.hide_image,
       'label': 'Remove BG',
-      'sub': 'Clean transparent cut',
+      'sub': 'Clean cutout · beta',
       'color': Color(0xFFEC4899),
       'route': 'removebg',
     },
@@ -67,6 +67,7 @@ class EnhanceHubScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Hero banner
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -90,7 +91,7 @@ class EnhanceHubScreen extends StatelessWidget {
                         children: [
                           Text('AI Photo Enhance', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                           SizedBox(height: 4),
-                          Text('Transform photos with free AI tools', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                          Text('Transform your photos with AI', style: TextStyle(color: Colors.white70, fontSize: 13)),
                         ],
                       ),
                     ),
