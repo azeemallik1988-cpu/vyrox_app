@@ -7,6 +7,8 @@ class EngineKeys {
   static const String gemini = '';
   static const String cloudflareAccount = '';
   static const String cloudflareToken = '';
+  // ⬇️SG_3dc6*******3ff1 PASTE YOUR FREE SEGMIND KEY HERE (from segmind.com)
+  static const String segmind = '';
 }
 
 class AiEngine {
