@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'image_result_screen.dart';
-import 'package:flutter/material.dart';
 import '../../core/auth/auth_controller.dart';
 
 class CreateToolScreen extends StatefulWidget {
