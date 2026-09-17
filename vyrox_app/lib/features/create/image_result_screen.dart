@@ -35,6 +35,8 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   bool _downloading = false;
   String _statusMessage = 'Preparing...';
   final List<String> _failedEngines = [];
+  final Random _random = Random();
+  int _attemptId = 0;
 
   @override
   void initState() {
@@ -68,12 +70,14 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         setState(() {
           _hasError = true;
           _isLoading = false;
-          _statusMessage =
-              '${engineMeta.label} needs an API key. Add it in ai_engines.dart.';
+          _statusMessage = '${engineMeta.label} needs an API key. Add it in ai_engines.dart.';
         });
       }
       return;
     }
+
+    _attemptId++;
+    final int myAttempt = _attemptId;
 
     setState(() {
       _isLoading = true;
@@ -81,21 +85,19 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
       _imageUrl = null;
       _failedEngines.clear();
       _successEngine = null;
+      _statusMessage = 'Starting...';
     });
 
-    final (w, h) = _dimensions();
-    final seed = Random().nextInt(999999);
     final cascade = buildCascadeOrder(_preferredEngine);
-    final enhanced =
-        '${widget.prompt}, ${widget.style} style, ultra detailed, high quality, 8k';
-
     for (int i = 0; i < cascade.length; i++) {
-      final engineId = cascade[i];
-      if (!mounted) return;
+      if (!mounted || myAttempt != _attemptId) return;
 
-      setState(() {
-        _statusMessage = 'Trying ${engineId.toUpperCase()} (${i + 1}/${cascade.length})...';
-      });
+      final engineId = cascade[i];
+      final (w, h) = _dimensions();
+      // NEW seed per engine so cache doesn't collide
+      final seed = _random.nextInt(9999999);
+      final enhanced =
+          '${widget.prompt}, ${widget.style} style, ultra detailed, high quality, 8k';
 
       final url = buildPollinationsUrl(
         engineId: engineId,
@@ -105,48 +107,71 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         seed: seed,
       );
 
-      final ok = await _probe(url);
-      if (!mounted) return;
+      setState(() {
+        _statusMessage = 'Loading ${engineId.toUpperCase()} (${i + 1}/${cascade.length})...';
+        _imageUrl = url;
+      });
+
+      final ok = await _waitForImage(url, const Duration(seconds: 60));
+
+      if (!mounted || myAttempt != _attemptId) return;
 
       if (ok) {
         setState(() {
-          _imageUrl = url;
           _successEngine = engineId.toUpperCase();
           _isLoading = false;
+          _imageUrl = url;
         });
         return;
       } else {
         setState(() => _failedEngines.add(engineId.toUpperCase()));
+        // Clear cache so retry is fresh
+        try {
+          await NetworkImage(url).evict();
+        } catch (_) {}
+        await Future.delayed(const Duration(milliseconds: 400));
       }
     }
 
-    if (mounted) {
+    if (mounted && myAttempt == _attemptId) {
       setState(() {
         _hasError = true;
         _isLoading = false;
-        _statusMessage = 'All engines failed';
+        _statusMessage = 'All engines failed. Retry in 30 seconds.';
       });
     }
   }
 
-  Future<bool> _probe(String url) async {
-    HttpClient? client;
-    try {
-      client = HttpClient();
-      client.connectionTimeout = const Duration(seconds: 30);
-      final request = await client.getUrl(Uri.parse(url)).timeout(const Duration(seconds: 35));
-      final response = await request.close().timeout(const Duration(seconds: 35));
-      if (response.statusCode == 200) {
-        await response.drain();
-        return true;
-      }
-      await response.drain();
-      return false;
-    } catch (_) {
-      return false;
-    } finally {
-      client?.close(force: true);
+  /// Wait for the image widget to fully load using ImageStream.
+  /// This is much more reliable than HTTP GET probing.
+  Future<bool> _waitForImage(String url, Duration timeout) async {
+    final completer = Completer<bool>();
+    final provider = NetworkImage(url);
+    final stream = provider.resolve(ImageConfiguration.empty);
+
+    late ImageStreamListener listener;
+    bool done = false;
+
+    void finish(bool ok) {
+      if (done) return;
+      done = true;
+      stream.removeListener(listener);
+      if (!completer.isCompleted) completer.complete(ok);
     }
+
+    listener = ImageStreamListener(
+      (info, sync) => finish(true),
+      onError: (error, stack) => finish(false),
+    );
+    stream.addListener(listener);
+
+    return completer.future.timeout(
+      timeout,
+      onTimeout: () {
+        finish(false);
+        return false;
+      },
+    );
   }
 
   void _pickEngine(String id) {
@@ -155,7 +180,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     _runCascade();
   }
 
-  // --- FULLSCREEN VIEW ---
   void _openFullscreen() {
     if (_imageUrl == null) return;
     Navigator.push(
@@ -166,25 +190,21 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     );
   }
 
-  // --- DOWNLOAD TO DEVICE ---
   Future<void> _downloadImage() async {
     if (_imageUrl == null || _downloading) return;
     setState(() => _downloading = true);
-
     try {
       final response = await http.get(Uri.parse(_imageUrl!));
       if (response.statusCode != 200) throw 'Download failed';
-
       final dir = await getApplicationDocumentsDirectory();
       final filename = 'vyrox_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File('${dir.path}/$filename');
       await file.writeAsBytes(response.bodyBytes);
-
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             backgroundColor: const Color(0xFF10B981),
-            content: Text('Saved to: Documents/$filename'),
+            content: Text('Saved: Documents/$filename'),
             duration: const Duration(seconds: 4),
           ),
         );
@@ -192,10 +212,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.redAccent,
-            content: Text('Download failed: $e'),
-          ),
+          SnackBar(backgroundColor: Colors.redAccent, content: Text('Download failed: $e')),
         );
       }
     } finally {
@@ -203,18 +220,15 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     }
   }
 
-  // --- SHARE ---
   Future<void> _shareImage() async {
     if (_imageUrl == null) return;
     try {
       final response = await http.get(Uri.parse(_imageUrl!));
       if (response.statusCode != 200) throw 'Fetch failed';
-
       final dir = await getTemporaryDirectory();
       final filename = 'vyrox_share_${DateTime.now().millisecondsSinceEpoch}.png';
       final file = File('${dir.path}/$filename');
       await file.writeAsBytes(response.bodyBytes);
-
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Created with Vyrox AI ✨\n"${widget.prompt}"',
@@ -222,10 +236,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.redAccent,
-            content: Text('Share failed: $e'),
-          ),
+          SnackBar(backgroundColor: Colors.redAccent, content: Text('Share failed: $e')),
         );
       }
     }
@@ -249,7 +260,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ⭐ ENGINE PICKER (FIXED OVERFLOW)
             const Text('AI Engine', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             SizedBox(
@@ -279,29 +289,15 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Icon(eng.icon, size: 14, color: selected ? const Color(0xFFA78BFA) : Colors.white70),
-                              const Spacer(),
-                              if (locked) const Icon(Icons.lock, size: 10, color: Colors.orangeAccent),
-                            ],
-                          ),
-                          Text(
-                            eng.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            eng.description,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white54, fontSize: 8),
-                          ),
+                          Row(children: [
+                            Icon(eng.icon, size: 14, color: selected ? const Color(0xFFA78BFA) : Colors.white70),
+                            const Spacer(),
+                            if (locked) const Icon(Icons.lock, size: 10, color: Colors.orangeAccent),
+                          ]),
+                          Text(eng.label, maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                          Text(eng.description, maxLines: 1, overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Colors.white54, fontSize: 8)),
                         ],
                       ),
                     ),
@@ -311,12 +307,12 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
             ),
             const SizedBox(height: 16),
 
-            // IMAGE AREA (TAP FOR FULLSCREEN)
+            // IMAGE AREA
             GestureDetector(
               onTap: _openFullscreen,
               child: Container(
                 width: double.infinity,
-                constraints: const BoxConstraints(minHeight: 320),
+                height: 340,
                 decoration: BoxDecoration(
                   color: const Color(0xFF181228),
                   borderRadius: BorderRadius.circular(24),
@@ -325,26 +321,23 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(24),
                   child: Stack(
+                    fit: StackFit.expand,
                     children: [
                       _buildImageArea(),
                       if (_imageUrl != null && !_isLoading && !_hasError)
                         Positioned(
-                          bottom: 12,
-                          right: 12,
+                          bottom: 12, right: 12,
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                             decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.6),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.fullscreen, size: 16, color: Colors.white),
-                                SizedBox(width: 4),
-                                Text('Tap to view', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
+                            child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                              Icon(Icons.fullscreen, size: 16, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text('Tap to view', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            ]),
                           ),
                         ),
                     ],
@@ -357,62 +350,53 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
             _buildStatusBar(),
             const SizedBox(height: 16),
 
-            // ACTION BUTTONS (Download + Share)
             if (_imageUrl != null && !_isLoading && !_hasError)
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      onPressed: _downloading ? null : _downloadImage,
-                      icon: _downloading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                            )
-                          : const Icon(Icons.download, size: 20),
-                      label: const Text('Download', style: TextStyle(fontWeight: FontWeight.bold)),
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: BorderSide(color: Colors.white.withOpacity(0.2)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
+                    onPressed: _downloading ? null : _downloadImage,
+                    icon: _downloading
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.download, size: 20),
+                    label: const Text('Download', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF7B4FCE),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 0,
-                      ),
-                      onPressed: _shareImage,
-                      icon: const Icon(Icons.share, size: 20),
-                      label: const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF7B4FCE),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
                     ),
+                    onPressed: _shareImage,
+                    icon: const Icon(Icons.share, size: 20),
+                    label: const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                ],
-              ),
+                ),
+              ]),
             const SizedBox(height: 16),
 
-            Row(
-              children: [
-                _badge(widget.style, const Color(0xFFA78BFA), const Color(0xFF7B4FCE)),
-                const SizedBox(width: 8),
-                _badge(widget.aspectRatio, Colors.white60, Colors.white),
-                const Spacer(),
-                if (_savedToDb)
-                  const Row(children: [
-                    Icon(Icons.check_circle, color: Color(0xFF10B981), size: 14),
-                    SizedBox(width: 4),
-                    Text('Saved', style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold)),
-                  ]),
-              ],
-            ),
+            Row(children: [
+              _badge(widget.style, const Color(0xFFA78BFA), const Color(0xFF7B4FCE)),
+              const SizedBox(width: 8),
+              _badge(widget.aspectRatio, Colors.white60, Colors.white),
+              const Spacer(),
+              if (_savedToDb)
+                const Row(children: [
+                  Icon(Icons.check_circle, color: Color(0xFF10B981), size: 14),
+                  SizedBox(width: 4),
+                  Text('Saved', style: TextStyle(color: Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.bold)),
+                ]),
+            ]),
             const SizedBox(height: 16),
             const Text('Prompt', style: TextStyle(color: Colors.white60, fontSize: 13, fontWeight: FontWeight.bold)),
             const SizedBox(height: 6),
@@ -455,20 +439,40 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
 
   Widget _buildImageArea() {
     if (_hasError) return _errorWidget();
-    if (_isLoading || _imageUrl == null) return _loadingWidget();
-    return Image.network(
-      _imageUrl!,
-      fit: BoxFit.cover,
-      loadingBuilder: (c, child, p) => p == null ? child : _loadingWidget(),
-      errorBuilder: (c, e, s) {
-        WidgetsBinding.instance.addPostFrameCallback((_) => _runCascade());
-        return _loadingWidget();
-      },
+    if (_imageUrl == null) return _loadingWidget();
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Image.network(
+          _imageUrl!,
+          key: ValueKey(_imageUrl),
+          fit: BoxFit.cover,
+          // If loading, show spinner
+          loadingBuilder: (c, child, p) {
+            if (p == null) return child;
+            return _loadingWidget();
+          },
+          // If error after we thought it was OK, retry cascade
+          errorBuilder: (c, e, s) {
+            if (!_hasError && !_isLoading) {
+              WidgetsBinding.instance.addPostFrameCallback((_) => _runCascade());
+            }
+            return _loadingWidget();
+          },
+        ),
+        // If done, we already show image
+        if (_successEngine != null && !_isLoading)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _loadingWidget() => Container(
-    height: 340,
     alignment: Alignment.center,
     padding: const EdgeInsets.all(20),
     child: Column(
@@ -479,7 +483,7 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         Text(_statusMessage, textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white70, fontSize: 14, fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
-        const Text('Free engines may take 5-30s', style: TextStyle(color: Colors.white38, fontSize: 12)),
+        const Text('Free engines may take 10-60s', style: TextStyle(color: Colors.white38, fontSize: 12)),
         if (_failedEngines.isNotEmpty) ...[
           const SizedBox(height: 14),
           Wrap(
@@ -496,7 +500,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   );
 
   Widget _errorWidget() => Container(
-    height: 340,
     alignment: Alignment.center,
     padding: const EdgeInsets.all(20),
     child: Column(
@@ -507,7 +510,10 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
         Text(_statusMessage, textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
-        TextButton(onPressed: _runCascade, child: const Text('Retry', style: TextStyle(color: Color(0xFFA78BFA), fontWeight: FontWeight.bold))),
+        TextButton(
+          onPressed: _runCascade,
+          child: const Text('Retry All Engines', style: TextStyle(color: Color(0xFFA78BFA), fontWeight: FontWeight.bold)),
+        ),
       ],
     ),
   );
@@ -535,7 +541,6 @@ class _ImageResultScreenState extends State<ImageResultScreen> {
   }
 }
 
-// --- FULLSCREEN IMAGE VIEWER ---
 class _FullscreenImageViewer extends StatefulWidget {
   final String imageUrl;
   final String prompt;
