@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// SG_2c9a121c980622c7  YOUR FREE API KEYS HERE. Leave blank to disable that engine.
+/// YOUR FREE API KEYS HERE. Leave blank to disable that engine.
 /// Gemini: https://aistudio.google.com (free, 15 req/min)
 /// Cloudflare: https://dash.cloudflare.com (10k neurons/day free)
 class EngineKeys {
   static const String gemini = '';
   static const String cloudflareAccount = '';
   static const String cloudflareToken = '';
-  // ⬇️SG_2c9a121c980622c7  PASTE YOUR FREE SEGMIND KEY HERE (from segmind.com)
+  // ⬇️'SG_2c9a121c980622c7';  // PASTE YOUR FREE SEGMIND KEY HERE (from segmind.com)
   static const String segmind = '';
 }
 
