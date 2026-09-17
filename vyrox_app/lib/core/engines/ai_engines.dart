@@ -30,8 +30,8 @@ class AiEngine {
 final List<AiEngine> allEngines = [
   AiEngine(
     id: 'auto',
-    label: 'Auto',
-    description: 'Smart fallback',
+    label: 'Pollinations',
+    description: 'Auto · smart pick',
     icon: Icons.auto_awesome,
     requiresKey: false,
     isReady: true,
