@@ -25,21 +25,75 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
   bool _downloading = false;
   String? _error;
   int _categoryIndex = 0;
+  bool _keyLoaded = false;
 
   final ImagePicker _picker = ImagePicker();
   final List<String> _categories = ['upper_body', 'lower_body', 'dresses'];
   final List<String> _categoryLabels = ['Top / Shirt', 'Pants / Lower', 'Dress / Full'];
 
-   bool get _keyReady => KeyStore.segmind.isNotEmpty;
-  
+  @override
+  void initState() {
+    super.initState();
+    KeyStore.load().then((_) {
+      if (mounted) setState(() => _keyLoaded = true);
+    });
+  }
+
+  bool get _keyReady => KeyStore.segmind.isNotEmpty;
+
+  Future<void> _enterKey() async {
+    final controller = TextEditingController(text: KeyStore.segmind);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF181228),
+        title: const Text('Segmind API Key', style: TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Get a free key at segmind.com → API Keys. Paste it below.',
+              style: TextStyle(color: Colors.white60, fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'SG_...',
+                hintStyle: const TextStyle(color: Colors.white38),
+                filled: true,
+                fillColor: const Color(0xFF0F0C17),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B4FCE)),
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null) {
+      await KeyStore.saveSegmind(result);
+      if (mounted) {
+        setState(() => _error = null);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(backgroundColor: Color(0xFF10B981), content: Text('Key saved!')),
+        );
+      }
+    }
+  }
+
   Future<File?> _pick() async {
     try {
-      final XFile? x = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1536,
-        imageQuality: 90,
-      );
+      final XFile? x = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1536, imageQuality: 90);
       if (x == null) return null;
       return File(x.path);
     } catch (_) {
@@ -59,7 +113,7 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
 
   Future<void> _tryOn() async {
     if (!_keyReady) {
-      setState(() => _error = 'Add your free Segmind key in ai_engines.dart first.');
+      setState(() => _error = 'Tap "Set API Key" above and paste your free Segmind key.');
       return;
     }
     if (_person == null || _garment == null) {
@@ -67,11 +121,7 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
       return;
     }
 
-    setState(() {
-      _processing = true;
-      _error = null;
-      _resultBytes = null;
-    });
+    setState(() { _processing = true; _error = null; _resultBytes = null; });
 
     try {
       final personB64 = base64Encode(await _person!.readAsBytes());
@@ -79,10 +129,7 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
 
       final response = await http.post(
         Uri.parse('https://api.segmind.com/v1/idm-vton'),
-        headers: {
-          'x-api-key': EngineKeys.segmind,
-          'Content-Type': 'application/json',
-        },
+        headers: {'x-api-key': KeyStore.segmind, 'Content-Type': 'application/json'},
         body: jsonEncode({
           'human_img': personB64,
           'garm_img': garmentB64,
@@ -95,31 +142,16 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
       ).timeout(const Duration(seconds: 120));
 
       if (response.statusCode == 200) {
-        setState(() {
-          _resultBytes = response.bodyBytes;
-          _processing = false;
-        });
+        setState(() { _resultBytes = response.bodyBytes; _processing = false; });
       } else if (response.statusCode == 401) {
-        setState(() {
-          _error = 'Invalid Segmind key. Check ai_engines.dart.';
-          _processing = false;
-        });
+        setState(() { _error = 'Invalid key. Tap "Set API Key" and re-paste.'; _processing = false; });
       } else if (response.statusCode == 406 || response.statusCode == 402) {
-        setState(() {
-          _error = 'Free credits used up today. Try again tomorrow.';
-          _processing = false;
-        });
+        setState(() { _error = 'Free credits used up today. Try tomorrow.'; _processing = false; });
       } else {
-        setState(() {
-          _error = 'Try-on failed (${response.statusCode}). Use a full-body photo + clear garment image.';
-          _processing = false;
-        });
+        setState(() { _error = 'Try-on failed (${response.statusCode}). Use a full-body photo + clear garment image.'; _processing = false; });
       }
     } catch (e) {
-      setState(() {
-        _error = 'Error: $e';
-        _processing = false;
-      });
+      setState(() { _error = 'Error: $e'; _processing = false; });
     }
   }
 
@@ -137,11 +169,7 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(backgroundColor: Colors.redAccent, content: Text('Download failed: $e')),
-        );
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.redAccent, content: Text('Download failed: $e')));
     } finally {
       if (mounted) setState(() => _downloading = false);
     }
@@ -151,8 +179,7 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
     if (_resultBytes == null) return;
     try {
       final dir = await getTemporaryDirectory();
-      final filename = 'vyrox_outfit_${DateTime.now().millisecondsSinceEpoch}.png';
-      final file = File('${dir.path}/$filename');
+      final file = File('${dir.path}/vyrox_outfit_${DateTime.now().millisecondsSinceEpoch}.png');
       await file.writeAsBytes(_resultBytes!);
       await Share.shareXFiles([XFile(file.path)], text: 'Virtual try-on by Vyrox AI ✨');
     } catch (_) {}
@@ -173,33 +200,40 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!_keyReady)
-              Container(
-                margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.orangeAccent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.orangeAccent.withOpacity(0.3)),
-                ),
-                child: const Text(
-                  '🔑 Add your FREE Segmind key in ai_engines.dart to enable outfit try-on.',
-                  style: TextStyle(color: Colors.orangeAccent, fontSize: 12, fontWeight: FontWeight.w600),
-                ),
+            // KEY STATUS ROW
+            Container(
+              padding: const EdgeInsets.all(14),
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: _keyReady ? const Color(0xFF10B981).withOpacity(0.12) : Colors.orangeAccent.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: (_keyReady ? const Color(0xFF10B981) : Colors.orangeAccent).withOpacity(0.3)),
               ),
+              child: Row(
+                children: [
+                  Icon(_keyReady ? Icons.check_circle : Icons.key, color: _keyReady ? const Color(0xFF10B981) : Colors.orangeAccent, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      _keyReady ? 'API key active' : 'No key yet — tap to add your free key',
+                      style: TextStyle(color: _keyReady ? const Color(0xFF10B981) : Colors.orangeAccent, fontSize: 12, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _enterKey,
+                    child: Text(_keyReady ? 'Change' : 'Set API Key', style: const TextStyle(color: Color(0xFFA78BFA), fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ],
+              ),
+            ),
 
-            Row(
-              children: [
-                Expanded(child: _photoBox('Your photo', _person, _pickPerson, Icons.person)),
-                const SizedBox(width: 12),
-                Expanded(child: _photoBox('Clothing photo', _garment, _pickGarment, Icons.checkroom)),
-              ],
-            ),
+            Row(children: [
+              Expanded(child: _photoBox('Your photo', _person, _pickPerson, Icons.person)),
+              const SizedBox(width: 12),
+              Expanded(child: _photoBox('Clothing photo', _garment, _pickGarment, Icons.checkroom)),
+            ]),
             const SizedBox(height: 8),
-            const Text(
-              'Left = full-body photo of you. Right = a clothing item photo.',
-              style: TextStyle(color: Colors.white54, fontSize: 12),
-            ),
+            const Text('Left = full-body photo of you. Right = a clothing item photo.', style: TextStyle(color: Colors.white54, fontSize: 12)),
             const SizedBox(height: 20),
 
             const Text('Clothing type', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
@@ -227,40 +261,22 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
             if (_resultBytes != null) ...[
               const Text('Result', style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: Image.memory(_resultBytes!, width: double.infinity, fit: BoxFit.cover),
-              ),
+              ClipRRect(borderRadius: BorderRadius.circular(20), child: Image.memory(_resultBytes!, width: double.infinity, fit: BoxFit.cover)),
               const SizedBox(height: 16),
               Row(children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: BorderSide(color: Colors.white.withOpacity(0.2)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: _downloading ? null : _download,
-                    icon: _downloading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.download, size: 20),
-                    label: const Text('Download', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
+                Expanded(child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: BorderSide(color: Colors.white.withOpacity(0.2)), padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                  onPressed: _downloading ? null : _download,
+                  icon: _downloading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.download, size: 20),
+                  label: const Text('Download', style: TextStyle(fontWeight: FontWeight.bold)),
+                )),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
-                    ),
-                    onPressed: _share,
-                    icon: const Icon(Icons.share, size: 20),
-                    label: const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ),
-                ),
+                Expanded(child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), elevation: 0),
+                  onPressed: _share,
+                  icon: const Icon(Icons.share, size: 20),
+                  label: const Text('Share', style: TextStyle(fontWeight: FontWeight.bold)),
+                )),
               ]),
               const SizedBox(height: 16),
             ],
@@ -269,11 +285,7 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
               Container(
                 margin: const EdgeInsets.only(bottom: 16),
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.redAccent.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
-                ),
+                decoration: BoxDecoration(color: Colors.redAccent.withOpacity(0.12), borderRadius: BorderRadius.circular(14), border: Border.all(color: Colors.redAccent.withOpacity(0.3))),
                 child: Row(children: [
                   const Icon(Icons.error_outline, color: Colors.redAccent, size: 18),
                   const SizedBox(width: 10),
@@ -284,25 +296,14 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF7B4FCE),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  elevation: 0,
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7B4FCE), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)), elevation: 0),
                 onPressed: _processing ? null : _tryOn,
-                icon: _processing
-                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                    : const Icon(Icons.checkroom),
+                icon: _processing ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Icon(Icons.checkroom),
                 label: Text(_processing ? 'Trying on... (up to 90s)' : 'Try On Outfit', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             const SizedBox(height: 10),
-            const Text(
-              'Tip: use a clear full-body photo + a garment on plain background for best results.',
-              style: TextStyle(color: Colors.white38, fontSize: 12),
-            ),
+            const Text('Tip: use a clear full-body photo + a garment on plain background for best results.', style: TextStyle(color: Colors.white38, fontSize: 12)),
           ],
         ),
       ),
@@ -314,26 +315,16 @@ class _OutfitSwapScreenState extends State<OutfitSwapScreen> {
       onTap: onTap,
       child: Container(
         height: 180,
-        decoration: BoxDecoration(
-          color: const Color(0xFF181228),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-        ),
+        decoration: BoxDecoration(color: const Color(0xFF181228), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.white.withOpacity(0.08))),
         child: file != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: Image.file(file, fit: BoxFit.cover, width: double.infinity),
-              )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 36, color: Colors.white38),
-                  const SizedBox(height: 10),
-                  Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  const Text('Tap to pick', style: TextStyle(color: Colors.white38, fontSize: 10)),
-                ],
-              ),
+            ? ClipRRect(borderRadius: BorderRadius.circular(18), child: Image.file(file, fit: BoxFit.cover, width: double.infinity))
+            : Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Icon(icon, size: 36, color: Colors.white38),
+                const SizedBox(height: 10),
+                Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                const Text('Tap to pick', style: TextStyle(color: Colors.white38, fontSize: 10)),
+              ]),
       ),
     );
   }
