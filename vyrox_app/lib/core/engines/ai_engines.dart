@@ -1,107 +1,103 @@
-import 'dart:io';
-import 'dart:math';
-import 'package:http/http.dart' as http;
+import 'package:flutter/material.dart';
 
-/// Free image-to-image AI helper.
-/// Uploads image to catbox.moe (free, no key), then asks Pollinations Kontext
-/// to transform it based on the user's prompt.
-class AiEnhanceEngine {
-  /// Uploads a local file to catbox.moe and returns a public URL.
-  static Future<String?> uploadImage(File file) async {
-    try {
-      final uri = Uri.parse('https://catbox.moe/user/api.php');
-      final request = http.MultipartRequest('POST', uri)
-        ..fields['reqtype'] = 'fileupload'
-        ..files.add(await http.MultipartFile.fromPath('fileToUpload', file.path));
+/// ⚠️ PASTE YOUR FREE API KEYS HERE. Leave blank to disable that engine.
+/// Gemini: https://aistudio.google.com (free, 15 req/min)
+/// Cloudflare: https://dash.cloudflare.com (10k neurons/day free)
+class EngineKeys {
+  static const String gemini = '';
+  static const String cloudflareAccount = '';
+  static const String cloudflareToken = '';
+}
 
-      final streamed = await request.send().timeout(const Duration(seconds: 60));
-      final response = await http.Response.fromStream(streamed);
+class AiEngine {
+  final String id;
+  final String label;
+  final String description;
+  final IconData icon;
+  final bool requiresKey;
+  final bool isReady;
 
-      if (response.statusCode == 200 && response.body.trim().startsWith('http')) {
-        return response.body.trim();
-      }
-      return null;
-    } catch (_) {
-      return null;
-    }
+  const AiEngine({
+    required this.id,
+    required this.label,
+    required this.description,
+    required this.icon,
+    required this.requiresKey,
+    required this.isReady,
+  });
+}
+
+final List<AiEngine> allEngines = [
+  AiEngine(
+    id: 'auto',
+    label: 'Auto',
+    description: 'Smart',
+    icon: Icons.auto_awesome,
+    requiresKey: false,
+    isReady: true,
+  ),
+  AiEngine(
+    id: 'flux',
+    label: 'FLUX',
+    description: 'Pro quality',
+    icon: Icons.brush,
+    requiresKey: false,
+    isReady: true,
+  ),
+  AiEngine(
+    id: 'turbo',
+    label: 'Turbo',
+    description: 'Fastest',
+    icon: Icons.bolt,
+    requiresKey: false,
+    isReady: true,
+  ),
+  AiEngine(
+    id: 'kontext',
+    label: 'Kontext',
+    description: 'Context',
+    icon: Icons.psychology,
+    requiresKey: false,
+    isReady: true,
+  ),
+  AiEngine(
+    id: 'gemini',
+    label: 'Gemini',
+    description: 'Google',
+    icon: Icons.workspace_premium,
+    requiresKey: true,
+    isReady: EngineKeys.gemini.isNotEmpty,
+  ),
+  AiEngine(
+    id: 'cloudflare',
+    label: 'Cloud',
+    description: 'CF AI',
+    icon: Icons.cloud,
+    requiresKey: true,
+    isReady: EngineKeys.cloudflareAccount.isNotEmpty &&
+        EngineKeys.cloudflareToken.isNotEmpty,
+  ),
+];
+
+String buildPollinationsUrl({
+  required String engineId,
+  required String prompt,
+  required int width,
+  required int height,
+  required int seed,
+}) {
+  final encoded = Uri.encodeComponent(prompt);
+  final model = (engineId == 'auto') ? '' : '&model=$engineId';
+  return 'https://image.pollinations.ai/prompt/$encoded'
+      '?width=$width&height=$height&nologo=true&seed=$seed$model';
+}
+
+List<String> buildCascadeOrder(String preferred) {
+  const fallbackOrder = ['flux', 'turbo', 'kontext'];
+  final list = <String>[];
+  if (preferred != 'auto' && preferred != 'gemini' && preferred != 'cloudflare') {
+    list.add(preferred);
   }
-
-  /// Builds a Pollinations Kontext URL for image editing.
-  static String buildEnhanceUrl({
-    required String mode,
-    required String referenceUrl,
-    required String userPrompt,
-    int width = 1024,
-    int height = 1024,
-  }) {
-    final prompt = _promptFor(mode, userPrompt);
-    final encodedPrompt = Uri.encodeComponent(prompt);
-    final encodedRef = Uri.encodeComponent(referenceUrl);
-    final seed = Random().nextInt(999999);
-
-    return 'https://image.pollinations.ai/prompt/$encodedPrompt'
-        '?image=$encodedRef&model=kontext'
-        '&width=$width&height=$height'
-        '&nologo=true&seed=$seed';
-  }
-
-  static String _promptFor(String mode, String userPrompt) {
-    final extra = userPrompt.trim();
-    switch (mode) {
-      case 'background':
-        return extra.isEmpty
-            ? 'keep the person exactly the same, replace the background with a beautiful cinematic scene, photorealistic'
-            : 'keep the person exactly the same, replace the background with: $extra, photorealistic, professional lighting';
-      case 'faceswap':
-        return extra.isEmpty
-            ? 'photorealistic portrait, subtle face enhancement, preserve original pose and lighting'
-            : 'photorealistic portrait, make the person look like: $extra, preserve pose and lighting, natural look';
-      case 'outfit':
-        return extra.isEmpty
-            ? 'keep face and pose identical, change outfit to an elegant modern style, photorealistic'
-            : 'keep face and pose identical, change outfit to: $extra, photorealistic';
-      case 'upscale':
-        return 'upscale this image, enhance every detail, sharp 4K quality, high resolution, crystal clear, remove blur';
-      case 'removebg':
-        return 'remove the background completely, keep only the subject, clean sharp edges, plain white background, studio cutout';
-      default:
-        return extra.isEmpty ? 'enhance this image, photorealistic, high quality' : extra;
-    }
-  }
-
-  /// Friendly display name for a mode.
-  static String titleFor(String mode) {
-    switch (mode) {
-      case 'background':
-        return 'Change Background';
-      case 'faceswap':
-        return 'Change Face';
-      case 'outfit':
-        return 'Change Outfit';
-      case 'upscale':
-        return 'Upscale HD';
-      case 'removebg':
-        return 'Remove Background';
-      default:
-        return 'AI Enhance';
-    }
-  }
-
-  /// Placeholder hint for the prompt field.
-  static String hintFor(String mode) {
-    switch (mode) {
-      case 'background':
-        return 'Describe the new background (e.g. "sunset beach")';
-      case 'faceswap':
-        return 'Describe the new face (e.g. "older man with beard")';
-      case 'outfit':
-        return 'Describe the new outfit (e.g. "black business suit")';
-      case 'upscale':
-        return 'Optional (leave empty for auto AI upscaling)';
-      case 'removebg':
-        return 'Optional (leave empty for transparent-style cutout)';
-      default:
-        return 'Describe what you want';
-    }
-  }
+  list.addAll(fallbackOrder.where((e) => e != preferred));
+  return list;
 }
